@@ -1,0 +1,36 @@
+package cn.dawnstring.fatality.entity.boss;
+
+public enum BossList
+{
+    Commander_of_the_Imperial_Guard,
+    Calamity_Mage,
+    Acid_eroding_parasite,
+    Jungle_turtle,
+    Blood_red_slime,
+    Stone_Giant,
+    Flesh_and_blood_aggregation,
+    Gatekeeper_of_Darkness,
+    Reconnaissance_mechanical_bird,
+    Thousand_faced_Spectre,
+    Holy_Knight,
+    Residual_soul_of_a_deity,
+    Corrosion_infesting_Insect,
+    Red_Flame_Demon,
+    Lord_of_Hell,
+    End_Dragon,
+    Ender_servant,
+    Lord_of_Ender,
+    wither,
+    Spirit_Fire_Elf,
+    Form_of_Darkness,
+    Mechanical_End_Dragon,
+    Tsunami_Dragon,
+    Abyssal_Dragon,
+    Lord_of_the_Dead,
+    Holy_Flame_Calamity,
+    God_of_Calamity,
+    Hunting_Dragon,
+    Necromancer_Witch,
+    Mage_portrait,
+    End_of_Nightmare
+}

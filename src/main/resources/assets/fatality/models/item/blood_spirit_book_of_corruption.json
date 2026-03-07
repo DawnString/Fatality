@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "fatality:item/blood_spirit_book_of_corruption"
+  }
+}

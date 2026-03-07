@@ -1,0 +1,34 @@
+{
+  "main_menu_music": {
+    "sounds": [
+      {
+        "name": "fatality:music/main_menu_music",
+        "stream": true
+      }
+    ]
+  },
+  "end_of_nightmare_fight_music": {
+    "sounds": [
+      {
+        "name": "fatality:music/end_of_nightmare_fight_music",
+        "stream": true
+      }
+    ]
+  },
+  "spotlight_altar_start": {
+    "sounds": [
+      {
+        "name": "block.beacon.activate",
+        "stream": false
+      }
+    ]
+  },
+  "spotlight_altar_complete": {
+    "sounds": [
+      {
+        "name": "block.beacon.deactivate",
+        "stream": false
+      }
+    ]
+  }
+}

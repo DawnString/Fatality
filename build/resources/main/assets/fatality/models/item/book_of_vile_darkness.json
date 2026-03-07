@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "fatality:item/book_of_vile_darkness"
+  }
+}

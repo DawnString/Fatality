@@ -1,0 +1,23 @@
+{
+	"format_version": "1.9.0",
+	"credit": "Made with Blockbench",
+	"textures": {
+		"0": "fatality:entity/magnetic_burst",
+		"particle": "fatality:entity/magnetic_burst"
+	},
+	"elements": [
+		{
+			"from": [6, 3, 6],
+			"to": [11, 8, 11],
+			"rotation": {"angle": 0, "axis": "y", "origin": [6, 3, 6]},
+			"faces": {
+				"north": {"uv": [0, 0, 5, 5], "texture": "#0"},
+				"east": {"uv": [0, 5, 5, 10], "texture": "#0"},
+				"south": {"uv": [5, 0, 10, 5], "texture": "#0"},
+				"west": {"uv": [5, 5, 10, 10], "texture": "#0"},
+				"up": {"uv": [5, 15, 0, 10], "texture": "#0"},
+				"down": {"uv": [15, 0, 10, 5], "texture": "#0"}
+			}
+		}
+	]
+}
