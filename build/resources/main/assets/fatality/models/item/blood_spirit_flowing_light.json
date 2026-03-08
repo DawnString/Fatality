@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:item/handheld",
-  "textures": {
-    "layer0": "fatality:item/blood_spirit_flowing_light"
-  }
-}
