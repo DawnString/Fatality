@@ -49,4 +49,7 @@ public class ModModelLayers {
 
     public static final ModelLayerLocation LITTLE_GHOST_LAYER = new ModelLayerLocation(
             ResourceLocation.fromNamespaceAndPath(Fatality.MODID, "little_ghost"), "main");
+
+    public static final ModelLayerLocation COMMANDER_OF_THE_UNDEAD_GUARD_LAYER = new ModelLayerLocation(
+            ResourceLocation.fromNamespaceAndPath(Fatality.MODID, "commander_of_the_undead_guard"), "main");
 }

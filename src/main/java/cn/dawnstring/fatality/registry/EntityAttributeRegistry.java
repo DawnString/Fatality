@@ -6,8 +6,8 @@ import cn.dawnstring.fatality.entity.basemonster.goblin.Goblin;
 import cn.dawnstring.fatality.entity.basemonster.littleghost.LittleGhost;
 import cn.dawnstring.fatality.entity.basemonster.spirit.Spirit;
 import cn.dawnstring.fatality.entity.boss.ExampleBoss;
+import cn.dawnstring.fatality.entity.boss.commanderoftheundeadguard.CommanderOfTheUndeadGuard;
 import cn.dawnstring.fatality.entity.boss.endofnightmare.EndOfNightmare;
-import net.minecraft.world.entity.EntityType;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 
@@ -32,5 +32,7 @@ public class EntityAttributeRegistry {
         event.put(ModEntities.GOBLIN.get(), Goblin.createAttributes().build());
         // 注册LittleGhost的属性
         event.put(ModEntities.LITTLE_GHOST.get(), LittleGhost.createAttributes().build());
+        // 注册CommanderOftTheUndeadGuard Boss的属性
+        event.put(ModEntities.COMMANDER_OF_THE_UNDEAD_GUARD.get(), CommanderOfTheUndeadGuard.createAttributes().build());
     }
 }

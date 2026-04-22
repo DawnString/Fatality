@@ -6,6 +6,7 @@ import cn.dawnstring.fatality.entity.basemonster.goblin.Goblin;
 import cn.dawnstring.fatality.entity.basemonster.littleghost.LittleGhost;
 import cn.dawnstring.fatality.entity.basemonster.spirit.Spirit;
 import cn.dawnstring.fatality.entity.boss.ExampleBoss;
+import cn.dawnstring.fatality.entity.boss.commanderoftheundeadguard.CommanderOfTheUndeadGuard;
 import cn.dawnstring.fatality.entity.projectile.*;
 import cn.dawnstring.fatality.entity.boss.endofnightmare.EndOfNightmare;
 import net.minecraft.world.entity.EntityType;
@@ -833,4 +834,13 @@ public class ModEntities
                             .clientTrackingRange(8)
                             .updateInterval(2)
                             .build("little_ghost"));
+
+    // CommanderOftTheUndeadGuard Boss实体
+    public static final RegistryObject<EntityType<CommanderOfTheUndeadGuard>> COMMANDER_OF_THE_UNDEAD_GUARD =
+            ModRegistry.ENTITIES.register("commander_of_the_undead_guard",
+                    () -> EntityType.Builder.<CommanderOfTheUndeadGuard>of(CommanderOfTheUndeadGuard::new, MobCategory.MONSTER)
+                            .sized(1.2f, 3.0f) // Boss尺寸（宽1.2，高3.0）
+                            .clientTrackingRange(10)
+                            .updateInterval(2)
+                            .build("commander_of_the_undead_guard"));
 }

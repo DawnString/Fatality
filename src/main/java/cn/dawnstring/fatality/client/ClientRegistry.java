@@ -13,22 +13,20 @@ import cn.dawnstring.fatality.entity.basemonster.desertbeetle.DesertBeetleModel;
 import cn.dawnstring.fatality.entity.basemonster.goblin.GoblinModel;
 import cn.dawnstring.fatality.entity.basemonster.littleghost.LittleGhostModel;
 import cn.dawnstring.fatality.entity.basemonster.spirit.SpiritModel;
+import cn.dawnstring.fatality.entity.boss.commanderoftheundeadguard.CommanderOfTheUndeadGuardModel;
 import cn.dawnstring.fatality.registry.ModContainers;
 import cn.dawnstring.fatality.registry.ModEntities;
 import cn.dawnstring.fatality.bosslist.BossListKeyBinding;
-import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
-import net.minecraftforge.client.event.RenderGuiEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import cn.dawnstring.fatality.registry.ModRegistry;
 import cn.dawnstring.fatality.client.renderer.GenericItemProjectileRenderer;
 import cn.dawnstring.fatality.registry.ModItems;
 
@@ -245,6 +243,8 @@ public class ClientRegistry {
             EntityRenderers.register(ModEntities.GOBLIN.get(), GoblinRenderer::new);
             // 注册LittleGhost渲染器
             EntityRenderers.register(ModEntities.LITTLE_GHOST.get(), LittleGhostRenderer::new);
+            // 注册CommanderOftTheUndeadGuard渲染器
+            EntityRenderers.register(ModEntities.COMMANDER_OF_THE_UNDEAD_GUARD.get(), CommanderOfTheUndeadGuardRenderer::new);
 
 
             // 注册伤害数值指示器渲染器
@@ -311,5 +311,7 @@ public class ClientRegistry {
         event.registerLayerDefinition(ModModelLayers.GOBLIN_LAYER, GoblinModel::createBodyLayer);
         // 注册LittleGhost模型层定义
         event.registerLayerDefinition(ModModelLayers.LITTLE_GHOST_LAYER, LittleGhostModel::createBodyLayer);
+        // 注册CommanderOftTheUndeadGuard模型层定义
+        event.registerLayerDefinition(ModModelLayers.COMMANDER_OF_THE_UNDEAD_GUARD_LAYER, CommanderOfTheUndeadGuardModel::createBodyLayer);
     }
 }
