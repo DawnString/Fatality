@@ -227,8 +227,5 @@ public class ClientRegistry {
         // 注册BulletProjectile模型层定义
         event.registerLayerDefinition(ModModelLayers.BULLET_PROJECTILE_LAYER, BulletProjectileModel::createBodyLayer);
         // 注册TrainingPuppet模型层定义
-        event.registerLayerDefinition(ModModelLayers.TRAINING_PUPPET_LAYER, TrainingPuppetModel::createBodyLayer);
-        // 注册CommanderOfTheUndeadGuard模型层定义
-        event.registerLayerDefinition(CommanderOfTheUndeadGuardModel.LAYER_LOCATION, CommanderOfTheUndeadGuardModel::createBodyLayer);
-    }
+        event.registerLayerDefinition(ModModelLayers.TRAINING_PUPPET_LAYER, TrainingPuppetModel::createBodyLayer);}
 }

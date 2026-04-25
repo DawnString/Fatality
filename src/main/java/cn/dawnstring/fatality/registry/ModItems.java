@@ -340,9 +340,6 @@ public class ModItems {
             () -> new TerminusStone());
     public static final RegistryObject<Item> TRAINING_PUPPET_ITEM = ModRegistry.ITEMS.register("training_puppet",
             () -> new TrainingPuppetItem());
-    public static final RegistryObject<Item> COMMANDER_OF_THE_UNDEAD_GUARD_SUMMON = ModRegistry.ITEMS.register("commander_of_the_undead_guard_summon",
-            () -> new CommanderOfTheUndeadGuardSummonItem());
-
 
     // 武器物品
     public static final RegistryObject<Item> SCYTHE_OF_THE_END = ModRegistry.ITEMS.register("scythe_of_the_end",
