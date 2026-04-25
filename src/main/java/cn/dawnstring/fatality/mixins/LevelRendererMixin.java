@@ -4,6 +4,7 @@ import cn.dawnstring.fatality.client.handler.SkyRendererEventHandler;
 import cn.dawnstring.fatality.client.renderer.CelestialBodyRenderer;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -76,7 +77,7 @@ public class LevelRendererMixin {
         float sunSize = 30.0F;
         
         // 使用自定义太阳渲染器
-        BufferBuilder bufferBuilder = new BufferBuilder(256);
+        BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
         CelestialBodyRenderer.renderSun(poseStack, bufferBuilder, sunX, sunY, sunSize, 0.0F, 1.0F, 1.0F, 0.8F);
     }
     
@@ -90,7 +91,7 @@ public class LevelRendererMixin {
         float moonSize = 20.0F;
         
         // 使用自定义月亮渲染器
-        BufferBuilder bufferBuilder = new BufferBuilder(256);
+        BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
         CelestialBodyRenderer.renderMoon(poseStack, bufferBuilder, moonX, moonY, moonSize, 0.0F, 1.0F, 1.0F, 0.8F, moonPhase);
     }
 }

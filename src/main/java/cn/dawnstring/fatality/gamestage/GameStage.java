@@ -132,71 +132,71 @@ public enum GameStage
      */
     private static EntityType<? extends LivingEntity> getEntityTypeFromBossList(BossList boss) {
         switch (boss) {
-            case Commander_of_the_Imperial_Guard:
+            case commander_of_the_undead_guard:
                 // 暂时使用ExampleBoss作为默认实现
-                return ModEntities.EXAMPLE_BOSS.get();
+                return ModEntities.TRAINING_PUPPET.get();
             case Calamity_Mage:
-                return ModEntities.EXAMPLE_BOSS.get();
+                return ModEntities.TRAINING_PUPPET.get();
             case Acid_eroding_parasite:
-                return ModEntities.EXAMPLE_BOSS.get();
+                return ModEntities.TRAINING_PUPPET.get();
             case Jungle_turtle:
-                return ModEntities.EXAMPLE_BOSS.get();
+                return ModEntities.TRAINING_PUPPET.get();
             case Blood_red_slime:
-                return ModEntities.EXAMPLE_BOSS.get();
+                return ModEntities.TRAINING_PUPPET.get();
             case Stone_Giant:
-                return ModEntities.EXAMPLE_BOSS.get();
+                return ModEntities.TRAINING_PUPPET.get();
             case Flesh_and_blood_aggregation:
-                return ModEntities.EXAMPLE_BOSS.get();
+                return ModEntities.TRAINING_PUPPET.get();
             case Gatekeeper_of_Darkness:
-                return ModEntities.EXAMPLE_BOSS.get();
+                return ModEntities.TRAINING_PUPPET.get();
             case Reconnaissance_mechanical_bird:
-                return ModEntities.EXAMPLE_BOSS.get();
+                return ModEntities.TRAINING_PUPPET.get();
             case Thousand_faced_Spectre:
-                return ModEntities.EXAMPLE_BOSS.get();
+                return ModEntities.TRAINING_PUPPET.get();
             case Holy_Knight:
-                return ModEntities.EXAMPLE_BOSS.get();
+                return ModEntities.TRAINING_PUPPET.get();
             case Residual_soul_of_a_deity:
-                return ModEntities.EXAMPLE_BOSS.get();
+                return ModEntities.TRAINING_PUPPET.get();
             case Corrosion_infesting_Insect:
-                return ModEntities.EXAMPLE_BOSS.get();
+                return ModEntities.TRAINING_PUPPET.get();
             case Red_Flame_Demon:
-                return ModEntities.EXAMPLE_BOSS.get();
+                return ModEntities.TRAINING_PUPPET.get();
             case Lord_of_Hell:
-                return ModEntities.EXAMPLE_BOSS.get();
+                return ModEntities.TRAINING_PUPPET.get();
             case End_Dragon:
                 return EntityType.ENDER_DRAGON; // 使用原版末影龙
             case Ender_servant:
-                return ModEntities.EXAMPLE_BOSS.get();
+                return ModEntities.TRAINING_PUPPET.get();
             case Lord_of_Ender:
-                return ModEntities.EXAMPLE_BOSS.get();
+                return ModEntities.TRAINING_PUPPET.get();
             case wither:
                 return EntityType.WITHER; // 使用原版凋灵
             case Spirit_Fire_Elf:
-                return ModEntities.EXAMPLE_BOSS.get();
+                return ModEntities.TRAINING_PUPPET.get();
             case Form_of_Darkness:
-                return ModEntities.EXAMPLE_BOSS.get();
+                return ModEntities.TRAINING_PUPPET.get();
             case Mechanical_End_Dragon:
-                return ModEntities.EXAMPLE_BOSS.get();
+                return ModEntities.TRAINING_PUPPET.get();
             case Tsunami_Dragon:
-                return ModEntities.EXAMPLE_BOSS.get();
+                return ModEntities.TRAINING_PUPPET.get();
             case Abyssal_Dragon:
-                return ModEntities.EXAMPLE_BOSS.get();
+                return ModEntities.TRAINING_PUPPET.get();
             case Lord_of_the_Dead:
-                return ModEntities.EXAMPLE_BOSS.get();
+                return ModEntities.TRAINING_PUPPET.get();
             case Holy_Flame_Calamity:
-                return ModEntities.EXAMPLE_BOSS.get();
+                return ModEntities.TRAINING_PUPPET.get();
             case God_of_Calamity:
-                return ModEntities.EXAMPLE_BOSS.get();
+                return ModEntities.TRAINING_PUPPET.get();
             case Hunting_Dragon:
-                return ModEntities.EXAMPLE_BOSS.get();
+                return ModEntities.TRAINING_PUPPET.get();
             case Necromancer_Witch:
-                return ModEntities.EXAMPLE_BOSS.get();
+                return ModEntities.TRAINING_PUPPET.get();
             case Mage_portrait:
-                return ModEntities.EXAMPLE_BOSS.get();
+                return ModEntities.TRAINING_PUPPET.get();
             case End_of_Nightmare:
-                return ModEntities.END_OF_NIGHTMARE.get(); // 使用已实现的EndOfNightmare
+                return ModEntities.TRAINING_PUPPET.get(); // 使用已实现的EndOfNightmare
             default:
-                return ModEntities.EXAMPLE_BOSS.get(); // 默认返回ExampleBoss
+                return ModEntities.TRAINING_PUPPET.get(); // 默认返回ExampleBoss
         }
     }
 }

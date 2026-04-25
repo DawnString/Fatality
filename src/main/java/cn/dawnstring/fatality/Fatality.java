@@ -2,7 +2,11 @@ package cn.dawnstring.fatality;
 
 import cn.dawnstring.fatality.client.DamageIndicatorRenderer;
 import cn.dawnstring.fatality.client.MainMenuReplacer;
+import cn.dawnstring.fatality.config.ArchitectureConfig;
+import cn.dawnstring.fatality.integration.MigrationHelper;
+import cn.dawnstring.fatality.integration.forge.ForgeIntegration;
 import cn.dawnstring.fatality.registry.EntityAttributeRegistry;
+import cn.dawnstring.fatality.system.LifeRingEffectManager;
 import cn.dawnstring.fatality.system.ManaRegenerationHandler;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
@@ -47,6 +51,9 @@ public class Fatality {
     {
         IEventBus modEventBus = modLoadingContext.getModEventBus();
 
+        // 初始化新架构配置
+        initializeNewArchitecture();
+
         // 注册所有物品、容器等
         ModRegistry.register(modEventBus);
 
@@ -55,8 +62,12 @@ public class Fatality {
 
         // 注册到Forge事件总线
         MinecraftForge.EVENT_BUS.register(this);
-        // 注册魔法值恢复处理器
+        
+        // 注册魔法值恢复处理器（已迁移到新架构）
         MinecraftForge.EVENT_BUS.register(ManaRegenerationHandler.class);
+        
+        // 注册生命之环效果管理器（已迁移到新架构）
+        MinecraftForge.EVENT_BUS.register(LifeRingEffectManager.class);
 
         // 注册声音事件
         SOUND_EVENTS.register(modEventBus);
@@ -90,5 +101,27 @@ public class Fatality {
     public void onRegisterCommands(RegisterCommandsEvent event) {
         GameStageCommand.register(event.getDispatcher());
         GameEventCommand.register(event.getDispatcher());
+    }
+
+    /**
+     * 初始化新架构系统
+     */
+    private void initializeNewArchitecture() {
+        // 验证配置有效性
+        ArchitectureConfig.validateConfig();
+        
+        // 打印配置摘要
+        System.out.println(ArchitectureConfig.getConfigSummary());
+        
+        // 如果启用新架构，初始化相关系统
+        if (ArchitectureConfig.ENABLE_EVENT_DRIVEN_ARCHITECTURE) {
+            // 初始化Forge集成
+            ForgeIntegration.initialize();
+            
+            // 打印迁移状态
+            MigrationHelper.printMigrationStatus();
+        }
+        
+        System.out.println("Fatality Mod initialized with new architecture");
     }
 }

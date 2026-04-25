@@ -1,6 +1,7 @@
 package cn.dawnstring.fatality.system;
 
 import cn.dawnstring.fatality.items.normal.HeartOfLife;
+import cn.dawnstring.fatality.utils.GameConstants;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -161,7 +162,7 @@ public class PlayerDataSystem {
         // 加载玩家魔法值
         public float loadPlayerMana(UUID playerUUID) {
             PlayerData data = playerDataMap.get(playerUUID);
-            return data != null ? data.currentMana : ManaSystem.BASE_MAX_MANA * 0.5f;
+            return data != null ? data.currentMana : GameConstants.BASE_MAX_MANA * 0.5f;
         }
 
         // 保存玩家魔法值加成
@@ -196,7 +197,7 @@ public class PlayerDataSystem {
      * 玩家数据类
      */
     private static class PlayerData {
-        public float currentMana = ManaSystem.BASE_MAX_MANA * 0.5f; // 默认当前魔法值
+        public float currentMana = GameConstants.BASE_MAX_MANA * 0.5f; // 默认当前魔法值
         public float bonusMana = 0.0f; // 物品增加的魔法值
         public float bonusHealth = 0.0f; // 物品增加的生命值
     }

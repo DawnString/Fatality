@@ -1,6 +1,5 @@
 package cn.dawnstring.fatality.items.weapon.melee;
 
-import cn.dawnstring.fatality.entity.BaseBoss;
 import cn.dawnstring.fatality.entity.projectile.AbyssOfCalamityProjectile;
 import cn.dawnstring.fatality.items.BaseWeapon;
 import cn.dawnstring.fatality.items.WeaponEnum;
@@ -100,14 +99,16 @@ public class AbyssOfCalamity extends BaseWeapon {
         
         return InteractionResultHolder.sidedSuccess(itemstack, level.isClientSide());
     }
-    
+
     /**
      * 判断是否为Boss
      */
-    private boolean isBoss(LivingEntity entity) {
-        return entity instanceof BaseBoss;
+    private boolean isBoss(LivingEntity entity)
+    {
+        //TODO
+        return false;
     }
-    
+
     /**
      * 重写inventoryTick方法，处理祸渊效果的持续伤害
      */

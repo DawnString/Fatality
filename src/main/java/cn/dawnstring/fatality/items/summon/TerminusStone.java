@@ -1,6 +1,5 @@
 package cn.dawnstring.fatality.items.summon;
 
-import cn.dawnstring.fatality.entity.boss.endofnightmare.EndOfNightmare;
 import cn.dawnstring.fatality.items.NormalItem;
 import cn.dawnstring.fatality.registry.ModEntities;
 import net.minecraft.core.BlockPos;
@@ -15,6 +14,7 @@ import net.minecraft.world.phys.AABB;
 
 import java.util.List;
 
+//TODO
 public class TerminusStone extends NormalItem {
 
     public TerminusStone() {
@@ -34,51 +34,9 @@ public class TerminusStone extends NormalItem {
         if (!level.isClientSide() && player != null) {
             ServerLevel serverLevel = (ServerLevel) level;
 
-            // 检查Boss是否已经存在
-            if (isBossAlreadyExists(serverLevel, pos)) {
-                return InteractionResult.FAIL;
-            }
-
-            // 检查是否在空旷区域（周围没有方块阻挡）
-            if (isValidSummonLocation(serverLevel, pos)) {
-                // 使用EntityType正确创建EndOfNightmare Boss
-                EndOfNightmare boss = new EndOfNightmare(ModEntities.END_OF_NIGHTMARE.get(), serverLevel);
-                boss.setPos(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
-
-                // 设置战斗场地中心为召唤位置
-                boss.setArenaCenter(pos);
-
-                // 设置Boss的目标为玩家（但出场动画期间不会攻击）
-                boss.setTarget(player);
-
-                // 添加到世界
-                serverLevel.addFreshEntity(boss);
-
-                // 播放召唤效果
-                // 这里可以添加粒子效果和音效
-
-                return InteractionResult.SUCCESS;
-            }
         }
 
         return InteractionResult.PASS;
-    }
-
-    /**
-     * 检查Boss是否已经存在
-     */
-    private boolean isBossAlreadyExists(ServerLevel level, BlockPos pos) {
-        // 搜索周围100格范围内的所有EndOfNightmare实体
-        AABB searchArea = new AABB(pos).inflate(100.0); // 100格搜索范围
-        List<EndOfNightmare> existingBosses = level.getEntitiesOfClass(EndOfNightmare.class, searchArea);
-
-        // 如果有存活的EndOfNightmare实体，则认为Boss已经存在
-        for (EndOfNightmare boss : existingBosses) {
-            if (boss.isAlive()) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

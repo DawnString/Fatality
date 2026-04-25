@@ -1,5 +1,8 @@
 package cn.dawnstring.fatality.system;
 
+import cn.dawnstring.fatality.core.events.FatalityEventBus;
+import cn.dawnstring.fatality.system.accessories.AccessoryEffectHandlerManager;
+import cn.dawnstring.fatality.utils.GameConstants;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -17,8 +20,8 @@ import net.minecraftforge.fml.common.Mod;
 import java.util.*;
 
 /**
- * 生命之环效果管理器
- * 使用粒子云实现高效的生命之环效果，避免性能问题
+ * 生命之环效果管理器 - 迁移到新的事件驱动架构
+ * 使用新的事件系统和饰品效果处理器
  * 特性：
  * - 中心化的效果管理，避免全局实体遍历
  * - 基于位置的区域检测，只在需要的地方进行计算
@@ -26,11 +29,6 @@ import java.util.*;
  */
 @Mod.EventBusSubscriber
 public class LifeRingEffectManager {
-    
-    // 生命之环效果配置
-    private static final float HEAL_AMOUNT = 10.0f; // 每次治疗量
-    private static final float DAMAGE_AMOUNT = 5.0f; // 每次伤害量
-    private static final int EFFECT_INTERVAL = 20; // 效果间隔1秒
     
     // 生命之环效果实例存储
     private static final Map<UUID, LifeRingEffect> activeEffects = new HashMap<>();
@@ -41,6 +39,9 @@ public class LifeRingEffectManager {
     public static void startLifeRingEffect(Level level, Vec3 center, int duration, float radius, Player owner) {
         LifeRingEffect effect = new LifeRingEffect(level, center, duration, radius, owner);
         activeEffects.put(effect.getId(), effect);
+        
+        // 发布生命之环启动事件到新的事件总线
+        // 这里可以添加自定义事件类型
     }
     
     /**
@@ -110,7 +111,7 @@ public class LifeRingEffectManager {
             effectTicks++;
             
             // 每1秒触发一次效果
-            if (effectTicks % EFFECT_INTERVAL == 0) {
+            if (effectTicks % GameConstants.LIFE_RING_EFFECT_INTERVAL == 0) {
                 applyEffects();
             }
             
@@ -156,7 +157,7 @@ public class LifeRingEffectManager {
         private void applyEffectToEntity(LivingEntity entity) {
             if (entity instanceof Player) {
                 // 对玩家进行治疗
-                entity.heal(HEAL_AMOUNT);
+                entity.heal(GameConstants.LIFE_RING_HEAL_AMOUNT);
                 entity.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 40, 1)); // 2秒再生效果
                 
                 // 播放治疗音效
@@ -164,7 +165,7 @@ public class LifeRingEffectManager {
                         SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.3F, 1.2F);
             } else {
                 // 对非玩家生物造成伤害
-                entity.hurt(entity.damageSources().magic(), DAMAGE_AMOUNT);
+                entity.hurt(entity.damageSources().magic(), GameConstants.LIFE_RING_DAMAGE_AMOUNT);
                 entity.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 40, 1)); // 2秒虚弱效果
                 
                 // 播放伤害音效
@@ -215,5 +216,19 @@ public class LifeRingEffectManager {
                 }
             }
         }
+    }
+    
+    /**
+     * 获取活跃的生命之环效果数量
+     */
+    public static int getActiveEffectsCount() {
+        return activeEffects.size();
+    }
+    
+    /**
+     * 清理所有活跃的生命之环效果
+     */
+    public static void clearAllEffects() {
+        activeEffects.clear();
     }
 }

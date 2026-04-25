@@ -2,12 +2,16 @@ package cn.dawnstring.fatality.events;
 
 import cn.dawnstring.fatality.gamestage.GameStage;
 import cn.dawnstring.fatality.gamestage.GameStageManager;
+import cn.dawnstring.fatality.network.GameEventSyncPacket;
+import cn.dawnstring.fatality.network.NetworkManager;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ServerLevelData;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.network.PacketDistributor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +23,7 @@ import java.util.Random;
 @Mod.EventBusSubscriber
 public class GameEventManager {
     private static final Map<Level, ActiveEvent> activeEvents = new HashMap<>();
+    private static final Map<Level, ActiveEvent> clientActiveEvents = new HashMap<>();
     private static final Random random = new Random();
 
     /**
@@ -190,6 +195,9 @@ public class GameEventManager {
                 event.getDisplayName(), version.getName(), durationInDays);
         level.players().forEach(player ->
                 player.sendSystemMessage(net.minecraft.network.chat.Component.literal(message)));
+
+        // 同步事件状态到客户端
+        syncEventToClients(level, activeEvent);
     }
 
     /**
@@ -200,7 +208,7 @@ public class GameEventManager {
         GameEvent.EventVersion version = activeEvent.version;
 
         // 应用天气效果
-        applyWeatherEffects(level, version);
+        //applyWeatherEffects(level, version);
 
         // 应用刷怪效果
         applySpawnEffects(level, version);
@@ -220,6 +228,9 @@ public class GameEventManager {
 
             // 重置天气效果
             resetWeatherEffects(level);
+
+            // 同步事件结束到客户端
+            syncEventEndToClients(level);
         }
     }
 
@@ -287,14 +298,57 @@ public class GameEventManager {
      * 获取当前活跃事件
      */
     public static ActiveEvent getActiveEvent(Level level) {
-        return activeEvents.get(level);
+        if (level instanceof ServerLevel) {
+            return activeEvents.get(level);
+        } else {
+            return clientActiveEvents.get(level);
+        }
     }
 
     /**
      * 检查是否有活跃事件
      */
     public static boolean hasActiveEvent(Level level) {
-        return activeEvents.containsKey(level);
+        if (level instanceof ServerLevel) {
+            return activeEvents.containsKey(level);
+        } else {
+            return clientActiveEvents.containsKey(level);
+        }
+    }
+
+    /**
+     * 设置客户端活跃事件
+     */
+    public static void setClientActiveEvent(Level level, ActiveEvent activeEvent) {
+        clientActiveEvents.put(level, activeEvent);
+    }
+
+    /**
+     * 移除客户端活跃事件
+     */
+    public static void removeClientActiveEvent(Level level) {
+        clientActiveEvents.remove(level);
+    }
+
+    /**
+     * 同步事件状态到客户端
+     */
+    private static void syncEventToClients(ServerLevel level, ActiveEvent activeEvent) {
+        GameEventSyncPacket packet = new GameEventSyncPacket(
+                activeEvent.event.getId(),
+                activeEvent.version.getName(),
+                activeEvent.startDayTime,
+                activeEvent.durationInDays
+        );
+        NetworkManager.INSTANCE.send(PacketDistributor.DIMENSION.with(level::dimension), packet);
+    }
+
+    /**
+     * 同步事件结束到客户端
+     */
+    private static void syncEventEndToClients(ServerLevel level) {
+        GameEventSyncPacket packet = new GameEventSyncPacket("", "", 0, 0);
+        NetworkManager.INSTANCE.send(PacketDistributor.DIMENSION.with(level::dimension), packet);
     }
 
     /**

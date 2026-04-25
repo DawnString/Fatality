@@ -6,6 +6,9 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
@@ -76,14 +79,14 @@ public class CelestialBodyRenderer {
         RenderSystem.setShaderTexture(0, BLOOD_MOON_PHASES);
         
         // 血月颜色（红色调）
-        RenderSystem.setShaderColor(1.2f, 0.3f, 0.3f, 1.0f);
+        RenderSystem.setShaderColor(1.0f, 0.3f, 0.3f, 1.0f);
         
-        // 计算血月相位对应的UV坐标（8种相位）
+        // 计算血月相位对应的UV坐标（8种相位，排列成4列2行）
         int phaseIndex = moonPhase % 8;
         float uOffset = (phaseIndex % 4) * 0.25f;
         float vOffset = (phaseIndex / 4) * 0.5f;
         
-        // 渲染血月
+        // 渲染血月（使用完整的纹理区域）
         renderTexturedQuad(poseStack, buffer, x, y, size, rotation, uOffset, vOffset, 0.25f, 0.5f);
         
         // 恢复默认颜色
@@ -118,29 +121,32 @@ public class CelestialBodyRenderer {
         
         float halfSize = size / 2.0f;
         
-        buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        Tesselator tesselator = Tesselator.getInstance();
+        BufferBuilder tessBuffer = tesselator.getBuilder();
+        
+        tessBuffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
         
         // 左上角
-        buffer.vertex(poseStack.last().pose(), -halfSize, -halfSize, 0.0f)
+        tessBuffer.vertex(poseStack.last().pose(), -halfSize, -halfSize, 0.0f)
               .uv(u, v)
               .endVertex();
         
         // 右上角
-        buffer.vertex(poseStack.last().pose(), halfSize, -halfSize, 0.0f)
+        tessBuffer.vertex(poseStack.last().pose(), halfSize, -halfSize, 0.0f)
               .uv(u + uWidth, v)
               .endVertex();
         
         // 右下角
-        buffer.vertex(poseStack.last().pose(), halfSize, halfSize, 0.0f)
+        tessBuffer.vertex(poseStack.last().pose(), halfSize, halfSize, 0.0f)
               .uv(u + uWidth, v + vHeight)
               .endVertex();
         
         // 左下角
-        buffer.vertex(poseStack.last().pose(), -halfSize, halfSize, 0.0f)
+        tessBuffer.vertex(poseStack.last().pose(), -halfSize, halfSize, 0.0f)
               .uv(u, v + vHeight)
               .endVertex();
         
-        BufferUploader.drawWithShader(buffer.end());
+        Tesselator.getInstance().end();
         poseStack.popPose();
     }
     

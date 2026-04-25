@@ -1,6 +1,5 @@
 package cn.dawnstring.fatality.entity.projectile;
 
-import cn.dawnstring.fatality.entity.BaseBoss;
 import cn.dawnstring.fatality.registry.ModEntities;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -159,8 +158,9 @@ public class AbyssOfCalamityProjectile extends AbstractArrow {
     /**
      * 判断是否为Boss
      */
+    //TODO
     private boolean isBoss(LivingEntity entity) {
-        return entity instanceof BaseBoss;
+        return false;
     }
 
     /**

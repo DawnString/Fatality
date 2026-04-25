@@ -2,7 +2,7 @@ package cn.dawnstring.fatality.entity.boss;
 
 public enum BossList
 {
-    Commander_of_the_Imperial_Guard,
+    commander_of_the_undead_guard,
     Calamity_Mage,
     Acid_eroding_parasite,
     Jungle_turtle,

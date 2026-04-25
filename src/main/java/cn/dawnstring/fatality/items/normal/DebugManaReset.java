@@ -1,5 +1,6 @@
 package cn.dawnstring.fatality.items.normal;
 
+import cn.dawnstring.fatality.utils.GameConstants;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -48,7 +49,7 @@ public class DebugManaReset extends Item {
         cn.dawnstring.fatality.system.PlayerDataSystem.savePlayerBonusMana(player, 0.0f);
         
         // 重置当前魔法值为基础值的一半
-        float baseMana = cn.dawnstring.fatality.system.ManaSystem.BASE_MAX_MANA * 0.5f;
+        float baseMana = GameConstants.BASE_MAX_MANA * 0.5f;
         cn.dawnstring.fatality.system.ManaSystem.setCurrentMana(player, baseMana);
         
         // 清除内存中的缓存

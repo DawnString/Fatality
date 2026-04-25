@@ -191,7 +191,7 @@ public class BossDetailScreen extends Screen {
         List<ItemStack> drops = new ArrayList<>();
         
         switch (boss) {
-            case Commander_of_the_Imperial_Guard:
+            case commander_of_the_undead_guard:
                 drops.add(new ItemStack(Items.IRON_SWORD));
                 drops.add(new ItemStack(Items.SHIELD));
                 drops.add(new ItemStack(Items.IRON_INGOT, 5));

@@ -1,7 +1,6 @@
 package cn.dawnstring.fatality.gamestage;
 
 import cn.dawnstring.fatality.Fatality;
-import cn.dawnstring.fatality.entity.BaseBoss;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
@@ -26,6 +25,7 @@ import java.util.UUID;
  * 游戏阶段管理器 - 基于世界的全局阶段系统
  * 负责管理整个世界的游戏阶段
  */
+//TODO
 @Mod.EventBusSubscriber(modid = Fatality.MODID, value = Dist.DEDICATED_SERVER)
 public class GameStageManager {
 
@@ -117,17 +117,6 @@ public class GameStageManager {
         }
 
         ServerLevel serverLevel = (ServerLevel) player.level();
-
-        // 在玩家周围64格范围内查找所有BaseBoss实体
-        net.minecraft.world.phys.AABB searchArea = player.getBoundingBox().inflate(64.0);
-        java.util.List<BaseBoss> bosses = serverLevel.getEntitiesOfClass(BaseBoss.class, searchArea);
-
-        // 通知每个Boss玩家死亡事件
-        for (BaseBoss boss : bosses) {
-            if (boss.isAlive()) {
-                boss.onPlayerDeath(player);
-            }
-        }
     }
 
 

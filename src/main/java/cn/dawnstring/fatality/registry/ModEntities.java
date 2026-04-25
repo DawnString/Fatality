@@ -1,14 +1,7 @@
 package cn.dawnstring.fatality.registry;
 
 import cn.dawnstring.fatality.entity.*;
-import cn.dawnstring.fatality.entity.basemonster.desertbeetle.DesertBeetle;
-import cn.dawnstring.fatality.entity.basemonster.goblin.Goblin;
-import cn.dawnstring.fatality.entity.basemonster.littleghost.LittleGhost;
-import cn.dawnstring.fatality.entity.basemonster.spirit.Spirit;
-import cn.dawnstring.fatality.entity.boss.ExampleBoss;
-import cn.dawnstring.fatality.entity.boss.commanderoftheundeadguard.CommanderOfTheUndeadGuard;
 import cn.dawnstring.fatality.entity.projectile.*;
-import cn.dawnstring.fatality.entity.boss.endofnightmare.EndOfNightmare;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraftforge.registries.RegistryObject;
@@ -18,9 +11,9 @@ public class ModEntities
     public static final RegistryObject<EntityType<WaveBreakerProjectile>> WAVE_BREAKER_PROJECTILE =
             ModRegistry.ENTITIES.register("wave_breaker_projectile",
                     () -> EntityType.Builder.<WaveBreakerProjectile>of(WaveBreakerProjectile::new, MobCategory.MISC)
-                            .sized(0.5f, 0.5f)  // 设置合适的大小
+                            .sized(0.5f, 0.5f)
                             .clientTrackingRange(4)
-                            .updateInterval(1)  // 更频繁的更新
+                            .updateInterval(1)
                             .build("wave_breaker_projectile"));
     public static final RegistryObject<EntityType<FireballProjectile>> FIREBALL_PROJECTILE = ModRegistry.ENTITIES.register("fireball_projectile",
             () -> EntityType.Builder.<FireballProjectile>of(FireballProjectile::new, MobCategory.MISC)
@@ -219,31 +212,6 @@ public class ModEntities
                             .clientTrackingRange(16)
                             .updateInterval(1)
                             .build("origin_laser_projectile"));
-    public static final RegistryObject<EntityType<EnhancedElementalMissileProjectile>> ENHANCED_ELEMENTAL_MISSILE_PROJECTILE =
-            ModRegistry.ENTITIES.register("enhanced_elemental_missile_projectile", () ->
-                    EntityType.Builder.<EnhancedElementalMissileProjectile>of(EnhancedElementalMissileProjectile::new, MobCategory.MISC)
-                            .sized(0.6F, 0.6F)  // 增强版导弹尺寸稍大
-                            .clientTrackingRange(6)
-                            .updateInterval(1)
-                            .build("enhanced_elemental_missile_projectile"));
-
-    // 新的Boss实体
-    public static final RegistryObject<EntityType<ExampleBoss>> EXAMPLE_BOSS =
-            ModRegistry.ENTITIES.register("example_boss",
-                    () -> EntityType.Builder.<ExampleBoss>of(ExampleBoss::new, MobCategory.MONSTER)
-                            .sized(2.0F, 4.0F) // Boss尺寸
-                            .clientTrackingRange(8)
-                            .updateInterval(3)
-                            .build("example_boss"));
-
-    // EndOfNightmare Boss实体
-    public static final RegistryObject<EntityType<EndOfNightmare>> END_OF_NIGHTMARE =
-            ModRegistry.ENTITIES.register("end_of_nightmare",
-                    () -> EntityType.Builder.<EndOfNightmare>of(EndOfNightmare::new, MobCategory.MONSTER)
-                            .sized(1.0F, 1.0F) // 更大的Boss尺寸
-                            .clientTrackingRange(10)
-                            .updateInterval(3)
-                            .build("end_of_nightmare"));
 
     // BloodSpiritFlowingLight追踪子弹实体
     public static final RegistryObject<EntityType<TrackingBulletProjectile>> TRACKING_BULLET =
@@ -799,48 +767,4 @@ public class ModEntities
                             .clientTrackingRange(8)  // 奇点弹需要更大的追踪范围
                             .updateInterval(1)
                             .build("singularity_projectile"));
-
-    // Spirit 敌对生物实体
-    public static final RegistryObject<EntityType<Spirit>> SPIRIT =
-            ModRegistry.ENTITIES.register("spirit",
-                    () -> EntityType.Builder.<Spirit>of(Spirit::new, MobCategory.MONSTER)
-                            .sized(1.0f, 1.0f)  // Spirit 尺寸（宽1.0，高1.0）
-                            .clientTrackingRange(8)
-                            .updateInterval(2)
-                            .build("spirit"));
-
-    // DesertBeetle 敌对生物实体
-    public static final RegistryObject<EntityType<DesertBeetle>> DESERT_BEETLE =
-            ModRegistry.ENTITIES.register("desert_beetle",
-                    () -> EntityType.Builder.<DesertBeetle>of(DesertBeetle::new, MobCategory.MONSTER)
-                            .sized(1.5f, 0.8f)  // DesertBeetle 尺寸（宽1.5，高0.8）
-                            .clientTrackingRange(8)
-                            .updateInterval(2)
-                            .build("desert_beetle"));
-
-    // Goblin 敌对生物实体
-    public static final RegistryObject<EntityType<Goblin>> GOBLIN =
-            ModRegistry.ENTITIES.register("goblin",
-                    () -> EntityType.Builder.<Goblin>of(Goblin::new, MobCategory.MONSTER)
-                            .sized(0.6f, 1.8f)  // Goblin 尺寸（宽0.6，高1.8）
-                            .clientTrackingRange(8)
-                            .updateInterval(2)
-                            .build("goblin"));
-
-    public static final RegistryObject<EntityType<LittleGhost>> LITTLE_GHOST =
-            ModRegistry.ENTITIES.register("little_ghost",
-                    () -> EntityType.Builder.<LittleGhost>of(LittleGhost::new, MobCategory.MONSTER)
-                            .sized(0.8f, 0.8f) // 小型幽灵尺寸
-                            .clientTrackingRange(8)
-                            .updateInterval(2)
-                            .build("little_ghost"));
-
-    // CommanderOftTheUndeadGuard Boss实体
-    public static final RegistryObject<EntityType<CommanderOfTheUndeadGuard>> COMMANDER_OF_THE_UNDEAD_GUARD =
-            ModRegistry.ENTITIES.register("commander_of_the_undead_guard",
-                    () -> EntityType.Builder.<CommanderOfTheUndeadGuard>of(CommanderOfTheUndeadGuard::new, MobCategory.MONSTER)
-                            .sized(1.2f, 3.0f) // Boss尺寸（宽1.2，高3.0）
-                            .clientTrackingRange(10)
-                            .updateInterval(2)
-                            .build("commander_of_the_undead_guard"));
 }

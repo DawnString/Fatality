@@ -1,8 +1,16 @@
 package cn.dawnstring.fatality.system;
 
+import cn.dawnstring.fatality.api.attributes.AttributeCalculator;
+import cn.dawnstring.fatality.api.attributes.AttributeModifier;
+import cn.dawnstring.fatality.api.attributes.IAttributeSystem;
+import cn.dawnstring.fatality.api.events.PlayerAttributeEvent;
+import cn.dawnstring.fatality.core.events.FatalityEventBus;
 import cn.dawnstring.fatality.items.AccessoryItem;
 import cn.dawnstring.fatality.items.accessory.HeartOfTheElements;
 import cn.dawnstring.fatality.items.accessory.MechanicalHeart;
+import cn.dawnstring.fatality.utils.AttributeCache;
+import cn.dawnstring.fatality.utils.GameConstants;
+import cn.dawnstring.fatality.utils.PlayerBaseAttributes;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -12,50 +20,200 @@ import cn.dawnstring.fatality.system.ManaSystem;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 /**
  * 属性系统 - 管理玩家的各种属性计算（重构版）
+ * 基于事件驱动架构重构
  */
-public class AttributeSystem {
-
+public class AttributeSystem implements IAttributeSystem
+{
     // 属性计算器映射
-    private static final Map<String, Function<Player, Float>> ATTRIBUTE_CALCULATORS = new HashMap<>();
+    private static final Map<String, AttributeCalculator> ATTRIBUTE_CALCULATORS = new ConcurrentHashMap<>();
+    
+    // 属性修改器映射
+    private static final Map<Player, Map<String, AttributeModifier>> PLAYER_MODIFIERS = new ConcurrentHashMap<>();
 
     static {
-        // 初始化属性计算器
-        ATTRIBUTE_CALCULATORS.put("health_regen", AttributeSystem::calculateHealthRegeneration);
-        ATTRIBUTE_CALCULATORS.put("mana_regen", AttributeSystem::calculateManaRegeneration);
-        ATTRIBUTE_CALCULATORS.put("attack_damage", AttributeSystem::calculateAttackDamage);
-        ATTRIBUTE_CALCULATORS.put("attack_speed", AttributeSystem::calculateAttackSpeed);
-        ATTRIBUTE_CALCULATORS.put("crit_chance", AttributeSystem::calculateCritChance);
-        ATTRIBUTE_CALCULATORS.put("damage_reduction", AttributeSystem::calculateDamageReduction);
-        ATTRIBUTE_CALCULATORS.put("movement_speed", AttributeSystem::calculateMovementSpeed);
-        ATTRIBUTE_CALCULATORS.put("crit_damage", AttributeSystem::calculateCritDamage);
-        ATTRIBUTE_CALCULATORS.put("melee_crit_damage", AttributeSystem::calculateMeleeCritDamage);
-        ATTRIBUTE_CALCULATORS.put("ranged_crit_damage", AttributeSystem::calculateRangedCritDamage);
-        ATTRIBUTE_CALCULATORS.put("magic_crit_damage", AttributeSystem::calculateMagicCritDamage);
-        ATTRIBUTE_CALCULATORS.put("magic_damage", AttributeSystem::calculateMagicDamage);
+        // ========== 基础属性计算器 ==========
+        registerAttributeStatic("health_regen", AttributeSystem::calculateHealthRegeneration);
+        registerAttributeStatic("mana_regen", AttributeSystem::calculateManaRegeneration);
+        registerAttributeStatic("attack_speed", AttributeSystem::calculateAttackSpeed);
+        registerAttributeStatic("crit_chance", AttributeSystem::calculateCritChance);
+        registerAttributeStatic("damage_reduction", AttributeSystem::calculateDamageReduction);
+        registerAttributeStatic("movement_speed", AttributeSystem::calculateMovementSpeed);
+        registerAttributeStatic("luck", AttributeSystem::calculateLuck);
         
-        // 新增伤害与护甲相关属性计算器
-        ATTRIBUTE_CALCULATORS.put("attack_damage_percentage", AttributeSystem::calculateAttackDamagePercentage);
-        ATTRIBUTE_CALCULATORS.put("damage_fluctuation", AttributeSystem::calculateDamageFluctuation);
-        ATTRIBUTE_CALCULATORS.put("armor_value", AttributeSystem::calculateArmorValue);
-        ATTRIBUTE_CALCULATORS.put("damage_resistance", AttributeSystem::calculateDamageResistance);
-        ATTRIBUTE_CALCULATORS.put("penetration_resistance", AttributeSystem::calculatePenetrationResistance);
-        ATTRIBUTE_CALCULATORS.put("penetration_resistance_coefficient", AttributeSystem::calculatePenetrationResistanceCoefficient);
-        ATTRIBUTE_CALCULATORS.put("armor_toughness", AttributeSystem::calculateArmorToughness);
+        // ========== 伤害数值计算器 ==========
+        registerAttributeStatic("melee_damage_value", AttributeSystem::calculateMeleeDamageValue);
+        registerAttributeStatic("ranged_damage_value", AttributeSystem::calculateRangedDamageValue);
+        registerAttributeStatic("magic_damage_value", AttributeSystem::calculateMagicDamageValue);
+        registerAttributeStatic("panel_damage_value", AttributeSystem::calculatePanelDamageValue);
+        
+        // ========== 伤害百分比计算器 ==========
+        registerAttributeStatic("melee_damage", AttributeSystem::calculateMeleeDamage);
+        registerAttributeStatic("ranged_damage", AttributeSystem::calculateRangedDamage);
+        registerAttributeStatic("magic_damage", AttributeSystem::calculateMagicDamage);
+        registerAttributeStatic("panel_damage", AttributeSystem::calculatePanelDamage);
+        
+        // ========== 暴击伤害计算器 ==========
+        registerAttributeStatic("crit_damage", AttributeSystem::calculateCritDamage);
+        registerAttributeStatic("melee_crit_damage", AttributeSystem::calculateMeleeCritDamage);
+        registerAttributeStatic("ranged_crit_damage", AttributeSystem::calculateRangedCritDamage);
+        registerAttributeStatic("magic_crit_damage", AttributeSystem::calculateMagicCritDamage);
+        
+        // ========== 防御属性计算器 ==========
+        registerAttributeStatic("defense", AttributeSystem::calculateDefense);
+        registerAttributeStatic("defense_percentage", AttributeSystem::calculateDefensePercentage);
+        
+        // ========== 生命值计算器 ==========
+        registerAttributeStatic("health", AttributeSystem::calculateHealth);
+        registerAttributeStatic("health_percentage", AttributeSystem::calculateHealthPercentage);
+        
+        // ========== 法力值计算器 ==========
+        registerAttributeStatic("max_mana", AttributeSystem::calculateMaxMana);
+        
+        // ========== 伤害与护甲相关计算器 ==========
+        registerAttributeStatic("attack_damage_percentage", AttributeSystem::calculateAttackDamagePercentage);
+        registerAttributeStatic("damage_fluctuation", AttributeSystem::calculateDamageFluctuation);
+        registerAttributeStatic("armor_value", AttributeSystem::calculateArmorValue);
+        registerAttributeStatic("damage_resistance", AttributeSystem::calculateDamageResistance);
+        registerAttributeStatic("penetration_resistance", AttributeSystem::calculatePenetrationResistance);
+        registerAttributeStatic("penetration_resistance_coefficient", AttributeSystem::calculatePenetrationResistanceCoefficient);
+        registerAttributeStatic("armor_toughness", AttributeSystem::calculateArmorToughness);
     }
 
     /**
-     * 统一获取属性值的方法
+     * 统一获取属性值的方法（带缓存）
      */
     public static float getAttributeValue(Player player, String attributeName) {
-        Function<Player, Float> calculator = ATTRIBUTE_CALCULATORS.get(attributeName);
+        // 尝试从缓存获取
+        float cachedValue = AttributeCache.getCachedAttribute(player, attributeName);
+        if (!Float.isNaN(cachedValue)) {
+            return cachedValue; // 返回缓存值
+        }
+        
+        // 缓存未命中，计算属性值
+        AttributeCalculator calculator = ATTRIBUTE_CALCULATORS.get(attributeName);
         if (calculator != null) {
-            return calculator.apply(player);
+            float baseValue = calculator.calculate(player);
+            float modifiedValue = applyModifiers(player, attributeName, baseValue);
+            
+            // 缓存计算结果
+            AttributeCache.cacheAttribute(player, attributeName, modifiedValue);
+            
+            return modifiedValue;
         }
         return 0.0f;
+    }
+
+    @Override
+    public float getAttribute(Player player, String attributeId) {
+        return getAttributeValue(player, attributeId);
+    }
+
+    @Override
+    public void registerAttribute(String attributeId, AttributeCalculator calculator) {
+        ATTRIBUTE_CALCULATORS.put(attributeId, calculator);
+    }
+    
+    /**
+     * 静态方法注册属性（兼容性）
+     */
+    public static void registerAttributeStatic(String attributeId, AttributeCalculator calculator) {
+        ATTRIBUTE_CALCULATORS.put(attributeId, calculator);
+    }
+    
+    /**
+     * 获取单例实例
+     */
+    public static AttributeSystem getInstance() {
+        return INSTANCE;
+    }
+    
+    private static final AttributeSystem INSTANCE = new AttributeSystem();
+
+    @Override
+    public void addAttributeModifier(Player player, AttributeModifier modifier) {
+        Map<String, AttributeModifier> modifiers = PLAYER_MODIFIERS.computeIfAbsent(player, k -> new ConcurrentHashMap<>());
+        
+        // 保存旧值用于事件触发
+        float oldValue = getAttributeValue(player, modifier.getAttributeId());
+        
+        modifiers.put(modifier.getModifierId(), modifier);
+        
+        // 触发属性变化事件
+        float newValue = getAttributeValue(player, modifier.getAttributeId());
+        if (oldValue != newValue) {
+            FatalityEventBus.getInstance().post(new PlayerAttributeEvent(
+                player, modifier.getAttributeId(), oldValue, newValue, 
+                PlayerAttributeEvent.AttributeChangeSource.SYSTEM
+            ));
+        }
+    }
+
+    @Override
+    public void removeAttributeModifier(Player player, String modifierId) {
+        Map<String, AttributeModifier> modifiers = PLAYER_MODIFIERS.get(player);
+        if (modifiers != null) {
+            AttributeModifier modifier = modifiers.get(modifierId);
+            if (modifier != null) {
+                // 保存旧值用于事件触发
+                float oldValue = getAttributeValue(player, modifier.getAttributeId());
+                
+                modifiers.remove(modifierId);
+                
+                // 触发属性变化事件
+                float newValue = getAttributeValue(player, modifier.getAttributeId());
+                if (oldValue != newValue) {
+                    FatalityEventBus.getInstance().post(new PlayerAttributeEvent(
+                        player, modifier.getAttributeId(), oldValue, newValue,
+                        PlayerAttributeEvent.AttributeChangeSource.SYSTEM
+                    ));
+                }
+            }
+        }
+    }
+
+    @Override
+    public Iterable<String> getRegisteredAttributes() {
+        return ATTRIBUTE_CALCULATORS.keySet();
+    }
+
+    @Override
+    public boolean isAttributeRegistered(String attributeId) {
+        return ATTRIBUTE_CALCULATORS.containsKey(attributeId);
+    }
+
+    /**
+     * 应用属性修改器
+     */
+    private static float applyModifiers(Player player, String attributeId, float baseValue) {
+        Map<String, AttributeModifier> modifiers = PLAYER_MODIFIERS.get(player);
+        if (modifiers == null) {
+            return baseValue;
+        }
+        
+        float result = baseValue;
+        
+        for (AttributeModifier modifier : modifiers.values()) {
+            if (modifier.getAttributeId().equals(attributeId)) {
+                switch (modifier.getType()) {
+                    case FLAT:
+                        result += modifier.getValue();
+                        break;
+                    case MULTIPLY:
+                        result *= modifier.getValue();
+                        break;
+                    case PERCENTAGE:
+                        result *= (1.0f + modifier.getValue() / 100.0f);
+                        break;
+                }
+            }
+        }
+        
+        return result;
     }
 
     // ========== 具体属性计算方法 ==========
@@ -64,28 +222,27 @@ public class AttributeSystem {
      * 计算生命恢复速度
      */
     private static float calculateHealthRegeneration(Player player) {
-        float baseRegen = HealthRegenerationHandler.BASE_HEALTH_REGEN_RATE; // 基础每秒恢复1点生命值
+        float baseRegen = PlayerBaseAttributes.getBaseHealthRegenRate(player);
         float accessoryBonus = calculateAccessoryBonus(player, AccessoryItem::getHealthRegenerationBonus);
         return baseRegen + accessoryBonus;
     }
 
     /**
-     * 计算魔法恢复速度
+     * 计算法力恢复速度
      */
     private static float calculateManaRegeneration(Player player) {
-        float baseRegen = ManaSystem.MANA_REGENERATION_RATE; // 基础每秒恢复2点魔法值
+        float baseRegen = PlayerBaseAttributes.getBaseManaRegenRate(player);
         float accessoryBonus = calculateAccessoryBonus(player, AccessoryItem::getManaRegenerationBonus);
         return baseRegen + accessoryBonus;
     }
 
     /**
-     * 计算攻击伤害
+     * 计算攻击力
      */
     private static float calculateAttackDamage(Player player) {
-        float baseDamage = (float) player.getAttributeValue(Attributes.ATTACK_DAMAGE);
-        float weaponBonus = calculateWeaponDamageBonus(player.getMainHandItem());
-        float accessoryBonus = calculateDynamicDamageBonus(player);
-        return baseDamage + weaponBonus + accessoryBonus;
+        float baseDamage = 1.0f; // 基础攻击力
+        float accessoryBonus = calculateAccessoryBonus(player, AccessoryItem::getMeleeDamageBonus);
+        return baseDamage + accessoryBonus;
     }
 
     /**
@@ -101,9 +258,7 @@ public class AttributeSystem {
      * 计算暴击率
      */
     private static float calculateCritChance(Player player) {
-        float baseCritChance = 0.05f; // 基础暴击率5%
-        float accessoryBonus = calculateAccessoryBonus(player, AccessoryItem::getCriticalChanceBonus);
-        return Math.min(baseCritChance + accessoryBonus, 1.0f); // 最大100%
+        return calculateAccessoryBonus(player, AccessoryItem::getCriticalChanceBonus);
     }
 
     /**
@@ -216,6 +371,100 @@ public class AttributeSystem {
         return baseToughness + accessoryBonus;
     }
 
+    // ========== 缺失的计算方法 ==========
+
+    /**
+     * 计算近战伤害数值
+     */
+    private static float calculateMeleeDamageValue(Player player) {
+        return calculateAccessoryBonus(player, AccessoryItem::getMeleeDamageValueBonus);
+    }
+
+    /**
+     * 计算远程伤害数值
+     */
+    private static float calculateRangedDamageValue(Player player) {
+        return calculateAccessoryBonus(player, AccessoryItem::getRangedDamageValueBonus);
+    }
+
+    /**
+     * 计算魔法伤害数值
+     */
+    private static float calculateMagicDamageValue(Player player) {
+        return calculateAccessoryBonus(player, AccessoryItem::getMagicDamageValueBonus);
+    }
+
+    /**
+     * 计算面板伤害数值
+     */
+    private static float calculatePanelDamageValue(Player player) {
+        return calculateAccessoryBonus(player, AccessoryItem::getPanelDamageValueBonus);
+    }
+
+    /**
+     * 计算近战伤害百分比
+     */
+    private static float calculateMeleeDamage(Player player) {
+        return calculateAccessoryBonus(player, AccessoryItem::getMeleeDamageBonus);
+    }
+
+    /**
+     * 计算远程伤害百分比
+     */
+    private static float calculateRangedDamage(Player player) {
+        return calculateAccessoryBonus(player, AccessoryItem::getRangedDamageBonus);
+    }
+
+    /**
+     * 计算面板伤害百分比
+     */
+    private static float calculatePanelDamage(Player player) {
+        return calculateAccessoryBonus(player, AccessoryItem::getPanelDamageBonus);
+    }
+
+    /**
+     * 计算防御值
+     */
+    private static float calculateDefense(Player player) {
+        return calculateAccessoryBonus(player, AccessoryItem::getDefenseBonus);
+    }
+
+    /**
+     * 计算防御百分比
+     */
+    private static float calculateDefensePercentage(Player player) {
+        return calculateAccessoryBonus(player, AccessoryItem::getDefensePercentageBonus);
+    }
+
+    /**
+     * 计算生命值
+     */
+    private static float calculateHealth(Player player) {
+        return calculateAccessoryBonus(player, AccessoryItem::getHealthBonus);
+    }
+
+    /**
+     * 计算生命值百分比
+     */
+    private static float calculateHealthPercentage(Player player) {
+        return calculateAccessoryBonus(player, AccessoryItem::getHealthPercentageBonus);
+    }
+
+    /**
+     * 计算最大法力值
+     */
+    private static float calculateMaxMana(Player player) {
+        return calculateAccessoryBonus(player, accessoryItem -> (float) accessoryItem.getMaxManaBonus());
+    }
+
+    /**
+     * 计算幸运值
+     */
+    private static float calculateLuck(Player player) {
+        float baseLuck = (float) player.getAttributeValue(Attributes.LUCK);
+        return baseLuck;
+    }
+
     // ========== 辅助计算方法 ==========
 
     /**
@@ -273,15 +522,23 @@ public class AttributeSystem {
     private static float calculateWeaponDamageBonus(ItemStack weapon) {
         if (weapon.isEmpty()) return 0.0f;
 
-        String itemName = weapon.getItem().getDescriptionId();
-
+        // 获取武器的基础伤害
+        float baseDamage = 1.0f;
+        
         // 根据武器类型给予不同的伤害加成
-        if (itemName.contains("sword")) return 5.0f;
-        if (itemName.contains("axe")) return 7.0f;
-        if (itemName.contains("dagger")) return 3.0f;
-        if (itemName.contains("scythe")) return 8.0f;
+        // 这里需要根据实际的武器系统实现
+        String itemName = weapon.getItem().getDescriptionId();
+        
+        if (itemName.contains("sword")) baseDamage = 5.0f;
+        else if (itemName.contains("axe")) baseDamage = 7.0f;
+        else if (itemName.contains("dagger")) baseDamage = 3.0f;
+        else if (itemName.contains("scythe")) baseDamage = 8.0f;
+        else if (itemName.contains("bow")) baseDamage = 4.0f;
+        else if (itemName.contains("crossbow")) baseDamage = 6.0f;
+        else if (itemName.contains("staff")) baseDamage = 5.0f;
+        else if (itemName.contains("wand")) baseDamage = 4.0f;
 
-        return 0.0f;
+        return baseDamage;
     }
 
     // ========== 兼容性方法（保持原有API） ==========
@@ -322,7 +579,35 @@ public class AttributeSystem {
     }
 
     /**
-     * 获取玩家减伤百分比（兼容性方法）
+     * 获取玩家暴击伤害（兼容性方法）
+     */
+    public static float getCritDamage(Player player) {
+        return getAttributeValue(player, "crit_damage");
+    }
+
+    /**
+     * 获取玩家近战暴击伤害（兼容性方法）
+     */
+    public static float getMeleeCritDamage(Player player) {
+        return getAttributeValue(player, "melee_crit_damage");
+    }
+
+    /**
+     * 获取玩家远程暴击伤害（兼容性方法）
+     */
+    public static float getRangedCritDamage(Player player) {
+        return getAttributeValue(player, "ranged_crit_damage");
+    }
+
+    /**
+     * 获取玩家魔法暴击伤害（兼容性方法）
+     */
+    public static float getMagicCritDamage(Player player) {
+        return getAttributeValue(player, "magic_crit_damage");
+    }
+
+    /**
+     * 获取玩家伤害减免百分比（兼容性方法）
      */
     public static float getDamageReductionPercentage(Player player) {
         return getAttributeValue(player, "damage_reduction");
@@ -336,37 +621,41 @@ public class AttributeSystem {
     }
 
     /**
-     * 获取玩家暴击伤害倍率（兼容性方法）
+     * 获取玩家幸运值（兼容性方法）
      */
-    public static float getCritDamage(Player player) {
-        return getAttributeValue(player, "crit_damage");
+    public static float getLuck(Player player) {
+        return getAttributeValue(player, "luck");
     }
 
     /**
-     * 获取玩家近战暴击伤害倍率（兼容性方法）
+     * 初始化玩家数据（当玩家登录时调用）
      */
-    public static float getMeleeCritDamage(Player player) {
-        return getAttributeValue(player, "melee_crit_damage");
+    public static void initializePlayer(Player player) {
+        // 清除旧的缓存
+        AttributeCache.clearPlayerCache(player);
+        
+        // 加载玩家基础属性
+        PlayerBaseAttributes.loadFromNBT(player);
+        
+        // 初始化玩家属性修改器数据
+        if (!PLAYER_MODIFIERS.containsKey(player)) {
+            PLAYER_MODIFIERS.put(player, new ConcurrentHashMap<>());
+        }
     }
 
     /**
-     * 获取玩家远程暴击伤害倍率（兼容性方法）
+     * 清理玩家数据（当玩家退出时调用）
      */
-    public static float getRangedCritDamage(Player player) {
-        return getAttributeValue(player, "ranged_crit_damage");
-    }
-
-    /**
-     * 获取玩家魔法暴击伤害倍率（兼容性方法）
-     */
-    public static float getMagicCritDamage(Player player) {
-        return getAttributeValue(player, "magic_crit_damage");
-    }
-
-    /**
-     * 获取玩家魔法伤害加成（兼容性方法）
-     */
-    public static float getMagicDamageBonus(Player player) {
-        return getAttributeValue(player, "magic_damage");
+    public static void cleanupPlayerData(Player player) {
+        // 保存玩家基础属性
+        PlayerBaseAttributes.saveToNBT(player);
+        
+        // 清除玩家缓存
+        AttributeCache.clearPlayerCache(player);
+        
+        // 清理玩家基础属性
+        PlayerBaseAttributes.cleanupPlayer(player);
+        
+        PLAYER_MODIFIERS.remove(player);
     }
 }

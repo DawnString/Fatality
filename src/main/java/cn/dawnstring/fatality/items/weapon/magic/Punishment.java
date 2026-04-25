@@ -2,7 +2,6 @@ package cn.dawnstring.fatality.items.weapon.magic;
 
 import cn.dawnstring.fatality.items.BaseWeapon;
 import cn.dawnstring.fatality.items.WeaponEnum;
-import cn.dawnstring.fatality.entity.BaseBoss;
 import cn.dawnstring.fatality.registry.ModEffects;
 import cn.dawnstring.fatality.system.ManaSystem;
 import net.minecraft.core.particles.ParticleTypes;
@@ -350,7 +349,8 @@ public class Punishment extends BaseWeapon
       */
      private boolean isBoss(LivingEntity entity) {
          // 检查是否继承BaseBoss类
-         return entity instanceof BaseBoss;
+         //TODO
+         return false;
      }
      
      /**

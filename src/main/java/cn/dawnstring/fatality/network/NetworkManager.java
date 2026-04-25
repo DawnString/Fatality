@@ -2,8 +2,6 @@ package cn.dawnstring.fatality.network;
 
 import cn.dawnstring.fatality.Fatality;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
 
@@ -34,5 +32,10 @@ public class NetworkManager {
                 ManaSyncPacket::encode,
                 ManaSyncPacket::decode,
                 ManaSyncPacket::handle);
+
+        INSTANCE.registerMessage(packetId++, GameEventSyncPacket.class,
+                GameEventSyncPacket::encode,
+                GameEventSyncPacket::decode,
+                GameEventSyncPacket::handle);
     }
 }

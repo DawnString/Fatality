@@ -1,6 +1,9 @@
 package cn.dawnstring.fatality.system;
 
 import cn.dawnstring.fatality.network.ManaSyncHandler;
+import cn.dawnstring.fatality.utils.GameConstants;
+import cn.dawnstring.fatality.utils.PlayerBaseAttributes;
+import cn.dawnstring.fatality.utils.ValidationUtils;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import cn.dawnstring.fatality.inventory.AccessoryInventory;
@@ -13,11 +16,8 @@ import java.util.Map;
 /**
  * 魔法系统 - 管理玩家的魔法值
  */
-public class ManaSystem {
-    public static final float BASE_MAX_MANA = 100.0f;
-    public static final float MANA_REGENERATION_RATE = 2.0f; // 每秒恢复2点魔法（每0.5秒恢复1点）
-    public static final float MAX_MANA_CAP = 400.0f; // 最大魔法值上限400点
-
+public class ManaSystem
+{
     // 魔法值存储（临时存储，实际应该使用NBT持久化）
     private static final Map<String, Float> playerManaMap = new HashMap<>();
     // 存储玩家通过物品增加的魔法值
@@ -30,7 +30,7 @@ public class ManaSystem {
      */
     public static float getMaxMana(Player player)
     {
-        float maxMana = BASE_MAX_MANA;
+        float maxMana = PlayerBaseAttributes.getBaseMaxMana(player);
 
         // 获取饰品栏
         var accessoryInventory = AccessoryInventory.get(player);
@@ -49,7 +49,7 @@ public class ManaSystem {
         maxMana += bonusMana;
 
         // 确保不超过最大上限
-        return Math.min(maxMana, MAX_MANA_CAP);
+        return Math.min(maxMana, GameConstants.MAX_MANA_CAP);
     }
 
     /**
@@ -61,7 +61,7 @@ public class ManaSystem {
         float newBonus = currentBonus + amount;
 
         // 检查是否超过上限
-        float baseMana = BASE_MAX_MANA;
+        float baseMana = PlayerBaseAttributes.getBaseMaxMana(player);
         var accessoryInventory = AccessoryInventory.get(player);
         if (accessoryInventory != null) {
             for (int i = 0; i < accessoryInventory.getItemHandler().getSlots(); i++) {
@@ -73,7 +73,7 @@ public class ManaSystem {
         }
 
         float totalMana = baseMana + newBonus;
-        if (totalMana > MAX_MANA_CAP) {
+        if (totalMana > GameConstants.MAX_MANA_CAP) {
             return false; // 超过上限
         }
 
@@ -96,6 +96,13 @@ public class ManaSystem {
             playerBonusManaMap.put(playerId, bonusMana);
             return bonusMana;
         }
+    }
+
+    /**
+     * 获取基础魔法恢复速率
+     */
+    public static float getBaseManaRegenRate() {
+        return GameConstants.BASE_MANA_REGEN_RATE;
     }
 
     /**
@@ -142,6 +149,13 @@ public class ManaSystem {
 
         // 保存到持久化存储
         PlayerDataSystem.savePlayerMana(player, clampedMana);
+    }
+    
+    /**
+     * 设置魔法值（别名方法）
+     */
+    public static void setMana(Player player, float mana) {
+        setCurrentMana(player, mana);
     }
 
     /**
