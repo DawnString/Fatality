@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "fatality:item/stone_of_earth_elemental_spirit"
-  }
-}
