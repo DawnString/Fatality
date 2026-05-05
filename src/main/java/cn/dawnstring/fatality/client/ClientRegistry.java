@@ -3,6 +3,7 @@ package cn.dawnstring.fatality.client;
 import cn.dawnstring.fatality.Fatality;
 import cn.dawnstring.fatality.client.model.*;
 import cn.dawnstring.fatality.client.renderer.*;
+import cn.dawnstring.fatality.client.renderer.boss.enderdragon.DragonFlameBallRenderer;
 import cn.dawnstring.fatality.registry.ModContainers;
 import cn.dawnstring.fatality.registry.ModEntities;
 import cn.dawnstring.fatality.bosslist.BossListKeyBinding;
@@ -200,6 +201,10 @@ public class ClientRegistry {
                     context -> new GenericItemProjectileRenderer<>(context, new ItemStack(ModItems.ULTIMATE_SUBMACHINE_GUN.get()), 0.9f));
             EntityRenderers.register(ModEntities.JUNGLE_SWORD_WAVE_PROJECTILE.get(),
                     context -> new GenericItemProjectileRenderer<>(context, new ItemStack(ModItems.JUNGLE_SCEPTER.get()), 0.9f));
+
+            // 注册龙炎法球渲染器
+            EntityRenderers.register(ModEntities.DRAGON_FLAME_BALL.get(), DragonFlameBallRenderer::new);
+            
             // 注册伤害数值指示器渲染器
             registerDamageIndicatorRenderer();
         });

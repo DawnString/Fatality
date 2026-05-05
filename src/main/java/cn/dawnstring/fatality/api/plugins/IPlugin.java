@@ -1,6 +1,7 @@
 package cn.dawnstring.fatality.api.plugins;
 
 import cn.dawnstring.fatality.api.systems.IModSystem;
+import cn.dawnstring.fatality.core.plugins.PluginManager;
 
 /**
  * 插件接口

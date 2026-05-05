@@ -1,6 +1,7 @@
 package cn.dawnstring.fatality.api.plugins;
 
 import cn.dawnstring.fatality.api.systems.IModSystem;
+import cn.dawnstring.fatality.core.plugins.PluginManager;
 
 /**
  * 插件上下文
@@ -45,11 +46,21 @@ public class PluginContext {
     /**
      * 注册事件监听器
      * @param eventClass 事件类型
-     * @param listener 监听器
+     * @param listener 监听器对象
      * @param <T> 事件类型
      */
     public <T> void registerEventListener(Class<T> eventClass, Object listener) {
         pluginManager.registerEventListener(pluginId, eventClass, listener);
+    }
+    
+    /**
+     * 注册事件监听器（函数式）
+     * @param eventClass 事件类型
+     * @param consumer 事件处理器
+     * @param <T> 事件类型
+     */
+    public <T> void registerEventListener(Class<T> eventClass, java.util.function.Consumer<T> consumer) {
+        pluginManager.registerEventListener(pluginId, eventClass, consumer);
     }
     
     /**

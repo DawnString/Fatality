@@ -1,6 +1,6 @@
 package cn.dawnstring.fatality.items;
 
-import cn.dawnstring.fatality.util.TooltipHelper;
+import cn.dawnstring.fatality.utils.TooltipHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;

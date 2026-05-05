@@ -1,11 +1,12 @@
 package cn.dawnstring.fatality;
 
-import cn.dawnstring.fatality.client.DamageIndicatorRenderer;
 import cn.dawnstring.fatality.client.MainMenuReplacer;
 import cn.dawnstring.fatality.config.ArchitectureConfig;
+import cn.dawnstring.fatality.core.config.ConfigManager;
+import cn.dawnstring.fatality.core.plugins.PluginManager;
+import cn.dawnstring.fatality.core.systems.SystemRegistry;
 import cn.dawnstring.fatality.integration.MigrationHelper;
 import cn.dawnstring.fatality.integration.forge.ForgeIntegration;
-import cn.dawnstring.fatality.registry.EntityAttributeRegistry;
 import cn.dawnstring.fatality.system.LifeRingEffectManager;
 import cn.dawnstring.fatality.system.ManaRegenerationHandler;
 import net.minecraft.resources.ResourceLocation;
@@ -24,19 +25,22 @@ import cn.dawnstring.fatality.gamestage.GameStageCommand;
 import cn.dawnstring.fatality.events.GameEventCommand;
 import cn.dawnstring.fatality.network.NetworkManager;
 import cn.dawnstring.fatality.registry.ModRegistry;
-import cn.dawnstring.fatality.client.CustomHudRenderer;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @Mod(Fatality.MODID)
 public class Fatality {
     public static final String MODID = "fatality";
-    public static final String VERSION = "0.1b";
+    public static final String VERSION = "1.0.0";
 
     public static final String DEV_ITEM_DES = "§d-开发者物品-";
     public static final String DOT_ITEM_DES = "§d-赞助者物品-";
     public static final String DEBUG_ITEM_DES = "§c-调试物品-";
+
+    public static Logger LOGGER =  LogManager.getLogger(MODID);
 
     public static final DeferredRegister<SoundEvent> SOUND_EVENTS = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, MODID);
 
@@ -53,6 +57,9 @@ public class Fatality {
 
         // 初始化新架构配置
         initializeNewArchitecture();
+
+        // 初始化配置管理器
+        ConfigManager.getInstance().initialize();
 
         // 注册所有物品、容器等
         ModRegistry.register(modEventBus);
@@ -115,6 +122,12 @@ public class Fatality {
         
         // 如果启用新架构，初始化相关系统
         if (ArchitectureConfig.ENABLE_EVENT_DRIVEN_ARCHITECTURE) {
+            // 初始化系统注册表
+            initializeSystemRegistry();
+            
+            // 初始化插件管理器
+            initializePluginManager();
+            
             // 初始化Forge集成
             ForgeIntegration.initialize();
             
@@ -123,5 +136,28 @@ public class Fatality {
         }
         
         System.out.println("Fatality Mod initialized with new architecture");
+    }
+    
+    /**
+     * 初始化系统注册表
+     */
+    private void initializeSystemRegistry() {
+        // 注册核心系统
+        SystemRegistry.register(cn.dawnstring.fatality.system.AttributeSystem.getInstance(), new String[]{}, 0);
+        SystemRegistry.register(cn.dawnstring.fatality.system.AccessorySystem.getInstance(), new String[]{"attribute"}, 1);
+        
+        // 注册模块系统
+        SystemRegistry.register(cn.dawnstring.fatality.modules.combat.CombatSystem.getInstance(), new String[]{"attribute", "accessory"}, 2);
+        SystemRegistry.register(cn.dawnstring.fatality.modules.boss.BossSystem.getInstance(), new String[]{"attribute", "combat"}, 3);
+        
+        // 初始化所有系统
+        SystemRegistry.initializeAll();
+    }
+    
+    /**
+     * 初始化插件管理器
+     */
+    private void initializePluginManager() {
+        PluginManager.getInstance().initialize();
     }
 }

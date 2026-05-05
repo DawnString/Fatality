@@ -6,6 +6,7 @@ import cn.dawnstring.fatality.api.attributes.AttributeModifier;
 import cn.dawnstring.fatality.api.attributes.AttributeModifier.ModifierType;
 import cn.dawnstring.fatality.api.events.AccessoryEquipEvent;
 import cn.dawnstring.fatality.api.events.AccessoryUnequipEvent;
+import cn.dawnstring.fatality.api.systems.IModSystem;
 import cn.dawnstring.fatality.core.events.FatalityEventBus;
 import cn.dawnstring.fatality.items.AccessoryItem;
 import cn.dawnstring.fatality.utils.GameConstants;
@@ -20,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * 饰品系统 - 管理玩家的饰品装备和效果（重构版）
  * 基于事件驱动架构重构
  */
-public class AccessorySystem implements IAccessorySystem {
+public class AccessorySystem implements IAccessorySystem, IModSystem {
     
     private static final AccessorySystem INSTANCE = new AccessorySystem();
     
@@ -34,6 +35,26 @@ public class AccessorySystem implements IAccessorySystem {
     
     public static AccessorySystem getInstance() {
         return INSTANCE;
+    }
+    
+    @Override
+    public String getSystemId() {
+        return "accessory";
+    }
+    
+    @Override
+    public void initialize() {
+        // 系统初始化逻辑
+    }
+    
+    @Override
+    public void onPlayerJoin(Player player) {
+        initializePlayer(player);
+    }
+    
+    @Override
+    public void onPlayerLeave(Player player) {
+        cleanupPlayerData(player);
     }
     
     @Override

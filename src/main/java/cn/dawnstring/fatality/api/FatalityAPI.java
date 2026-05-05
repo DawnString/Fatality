@@ -1,5 +1,6 @@
 package cn.dawnstring.fatality.api;
 
+import cn.dawnstring.fatality.Fatality;
 import cn.dawnstring.fatality.api.accessories.IAccessorySystem;
 import cn.dawnstring.fatality.api.attributes.IAttributeSystem;
 import cn.dawnstring.fatality.api.plugins.IPlugin;
@@ -15,7 +16,7 @@ import cn.dawnstring.fatality.system.AttributeSystem;
  */
 public class FatalityAPI {
     
-    private static final String VERSION = "1.0.0";
+    private static final String VERSION = Fatality.VERSION;
     
     /**
      * 获取API版本

@@ -2,7 +2,7 @@ package cn.dawnstring.fatality.items;
 
 import cn.dawnstring.fatality.inventory.AccessoryInventory;
 import cn.dawnstring.fatality.network.DamageIndicatorPacket;
-import cn.dawnstring.fatality.util.TooltipHelper;
+import cn.dawnstring.fatality.utils.TooltipHelper;
 import cn.dawnstring.fatality.network.NetworkManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;

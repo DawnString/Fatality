@@ -1,10 +1,6 @@
 package cn.dawnstring.fatality.integration.forge;
 
-import cn.dawnstring.fatality.core.systems.SystemManager;
-import cn.dawnstring.fatality.modules.boss.BossSystem;
-import cn.dawnstring.fatality.modules.combat.CombatSystem;
-import cn.dawnstring.fatality.system.AccessorySystem;
-import cn.dawnstring.fatality.system.AttributeSystem;
+import cn.dawnstring.fatality.core.systems.SystemRegistry;
 import cn.dawnstring.fatality.system.accessories.AccessoryEffectHandlerManager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.TickEvent;
@@ -28,15 +24,7 @@ public class ForgeIntegration {
         if (initialized) {
             return;
         }
-        
-        // 初始化系统管理器
-        SystemManager.getInstance().initialize();
-        
-        // 初始化各个模块
-        BossSystem.getInstance().initialize();
-        CombatSystem.getInstance().initialize();
-        
-        // 初始化饰品效果处理器管理器
+
         AccessoryEffectHandlerManager.getInstance();
         
         initialized = true;
@@ -54,11 +42,8 @@ public class ForgeIntegration {
         
         Player player = event.getEntity();
         
-        // 初始化饰品系统
-        AccessorySystem.getInstance().initializePlayer(player);
-        
-        // 初始化属性系统
-        AttributeSystem.getInstance().initializePlayer(player);
+        // 通知所有系统玩家登录
+        SystemRegistry.onPlayerJoin(player);
         
         // 初始化饰品效果处理器
         AccessoryEffectHandlerManager.getInstance().initializePlayer(player);
@@ -73,17 +58,11 @@ public class ForgeIntegration {
     public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         Player player = event.getEntity();
         
-        // 清理饰品系统数据
-        AccessorySystem.getInstance().cleanupPlayer(player);
-        
-        // 清理属性系统数据
-        AttributeSystem.getInstance().cleanupPlayerData(player);
+        // 通知所有系统玩家退出
+        SystemRegistry.onPlayerLeave(player);
         
         // 清理饰品效果处理器数据
         AccessoryEffectHandlerManager.getInstance().cleanupPlayerData(player);
-        
-        // 清理系统管理器数据
-        SystemManager.getInstance().cleanupPlayerData(player);
         
         System.out.println("Player logged out: " + player.getName().getString());
     }
@@ -94,17 +73,9 @@ public class ForgeIntegration {
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.START) {
-            // 每tick执行一次的系统更新
-            updateSystems();
+            // 通知所有系统服务器tick
+            SystemRegistry.onServerTick();
         }
-    }
-    
-    /**
-     * 更新所有系统
-     */
-    private static void updateSystems() {
-        // 这里可以添加需要每tick更新的系统逻辑
-        // 例如：定时效果检查、状态更新等
     }
     
     /**
@@ -114,11 +85,8 @@ public class ForgeIntegration {
     public static void onWorldLoad(PlayerEvent.PlayerChangedDimensionEvent event) {
         Player player = event.getEntity();
         
-        // 重新初始化饰品系统
-        AccessorySystem.getInstance().initializePlayer(player);
-        
-        // 重新初始化属性系统
-        AttributeSystem.getInstance().initializePlayer(player);
+        // 重新初始化玩家数据
+        SystemRegistry.onPlayerJoin(player);
         
         // 处理玩家维度变化
         System.out.println("Player changed dimension: " + player.getName().getString());

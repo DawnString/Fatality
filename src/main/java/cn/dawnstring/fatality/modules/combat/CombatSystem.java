@@ -2,8 +2,9 @@ package cn.dawnstring.fatality.modules.combat;
 
 import cn.dawnstring.fatality.api.attributes.IAttributeSystem;
 import cn.dawnstring.fatality.api.events.FatalityEvent;
+import cn.dawnstring.fatality.api.systems.IModSystem;
 import cn.dawnstring.fatality.core.events.FatalityEventBus;
-import cn.dawnstring.fatality.core.systems.SystemManager;
+import cn.dawnstring.fatality.core.systems.SystemRegistry;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -12,7 +13,7 @@ import net.minecraft.world.entity.player.Player;
  * 战斗系统模块
  * 基于事件驱动的战斗计算系统
  */
-public class CombatSystem {
+public class CombatSystem implements IModSystem {
     
     private static final CombatSystem INSTANCE = new CombatSystem();
     
@@ -25,9 +26,12 @@ public class CombatSystem {
         return INSTANCE;
     }
     
-    /**
-     * 初始化战斗系统
-     */
+    @Override
+    public String getSystemId() {
+        return "combat";
+    }
+    
+    @Override
     public void initialize() {
         System.out.println("Combat System initialized");
     }
@@ -57,7 +61,7 @@ public class CombatSystem {
         float baseDamage = event.getBaseDamage();
         
         // 获取属性系统
-        IAttributeSystem attributeSystem = SystemManager.getInstance().getAttributeSystem();
+        IAttributeSystem attributeSystem = SystemRegistry.getSystem("attribute");
         
         // 计算攻击者属性加成
         float attackDamage = attributeSystem.getAttribute(attacker, "attack_damage");

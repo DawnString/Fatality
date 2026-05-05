@@ -1,13 +1,11 @@
-package cn.dawnstring.fatality.mixin;
+package cn.dawnstring.fatality.mixins;
 
 import cn.dawnstring.fatality.entity.boss.enderdragon.DragonCombatMode;
 import cn.dawnstring.fatality.entity.boss.enderdragon.DragonFlameBall;
 import cn.dawnstring.fatality.registry.ModEffects;
 import cn.dawnstring.fatality.registry.ModEntities;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;

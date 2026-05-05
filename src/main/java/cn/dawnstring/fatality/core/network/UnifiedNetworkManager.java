@@ -2,10 +2,9 @@ package cn.dawnstring.fatality.core.network;
 
 import cn.dawnstring.fatality.Fatality;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.network.ChannelBuilder;
-import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.PacketDistributor;
-import net.minecraftforge.network.SimpleChannel;
+import net.minecraftforge.network.simple.SimpleChannel;
 
 import java.util.function.Supplier;
 
@@ -35,9 +34,12 @@ public class UnifiedNetworkManager {
      * 初始化网络通道
      */
     public void initialize() {
-        channel = ChannelBuilder.named(ResourceLocation.fromNamespaceAndPath(Fatality.MODID, "main"))
-                .networkProtocolVersion(1)
-                .simpleChannel();
+        channel = NetworkRegistry.newSimpleChannel(
+                ResourceLocation.fromNamespaceAndPath(Fatality.MODID, "unified"),
+                () -> PROTOCOL_VERSION,
+                PROTOCOL_VERSION::equals,
+                PROTOCOL_VERSION::equals
+        );
         
         Fatality.LOGGER.info("Network channel initialized");
     }
@@ -54,12 +56,7 @@ public class UnifiedNetworkManager {
                                      NetworkEncoder<MSG> encoder,
                                      NetworkDecoder<MSG> decoder,
                                      NetworkHandler<MSG> handler) {
-        channel.messageBuilder(packetClass, packetId++, NetworkDirection.PLAY_TO_SERVER)
-                .encoder(encoder::encode)
-                .decoder(decoder::decode)
-                .consumerMainThread(handler::handle)
-                .add();
-        
+        channel.registerMessage(packetId++, packetClass, encoder::encode, decoder::decode, handler::handle);
         Fatality.LOGGER.debug("Network packet registered: {}", packetClass.getSimpleName());
     }
     
@@ -75,11 +72,8 @@ public class UnifiedNetworkManager {
                                                    NetworkEncoder<MSG> encoder,
                                                    NetworkDecoder<MSG> decoder,
                                                    NetworkHandler<MSG> handler) {
-        channel.messageBuilder(packetClass, packetId++, NetworkDirection.PLAY_TO_SERVER)
-                .encoder(encoder::encode)
-                .decoder(decoder::decode)
-                .consumerMainThread(handler::handle)
-                .add();
+        channel.registerMessage(packetId++, packetClass, encoder::encode, decoder::decode, handler::handle);
+        Fatality.LOGGER.debug("Client-to-server packet registered: {}", packetClass.getSimpleName());
     }
     
     /**
@@ -94,11 +88,8 @@ public class UnifiedNetworkManager {
                                                    NetworkEncoder<MSG> encoder,
                                                    NetworkDecoder<MSG> decoder,
                                                    NetworkHandler<MSG> handler) {
-        channel.messageBuilder(packetClass, packetId++, NetworkDirection.PLAY_TO_CLIENT)
-                .encoder(encoder::encode)
-                .decoder(decoder::decode)
-                .consumerMainThread(handler::handle)
-                .add();
+        channel.registerMessage(packetId++, packetClass, encoder::encode, decoder::decode, handler::handle);
+        Fatality.LOGGER.debug("Server-to-client packet registered: {}", packetClass.getSimpleName());
     }
     
     /**
@@ -107,7 +98,7 @@ public class UnifiedNetworkManager {
      * @param <MSG> 消息类型
      */
     public <MSG> void sendToServer(MSG packet) {
-        channel.send(packet, PacketDistributor.SERVER.noArg());
+        channel.send(PacketDistributor.SERVER.noArg(), packet);
     }
     
     /**
@@ -117,7 +108,7 @@ public class UnifiedNetworkManager {
      * @param <MSG> 消息类型
      */
     public <MSG> void sendToPlayer(MSG packet, net.minecraft.server.level.ServerPlayer player) {
-        channel.send(packet, PacketDistributor.PLAYER.with(player));
+        channel.send(PacketDistributor.PLAYER.with(() -> player), packet);
     }
     
     /**
@@ -126,7 +117,7 @@ public class UnifiedNetworkManager {
      * @param <MSG> 消息类型
      */
     public <MSG> void sendToAllPlayers(MSG packet) {
-        channel.send(packet, PacketDistributor.ALL.noArg());
+        channel.send(PacketDistributor.ALL.noArg(), packet);
     }
     
     /**
@@ -136,7 +127,7 @@ public class UnifiedNetworkManager {
      * @param <MSG> 消息类型
      */
     public <MSG> void sendToTracking(MSG packet, net.minecraft.world.entity.Entity entity) {
-        channel.send(packet, PacketDistributor.TRACKING_ENTITY.with(entity));
+        channel.send(PacketDistributor.TRACKING_ENTITY.with(() -> entity), packet);
     }
     
     /**
@@ -146,7 +137,7 @@ public class UnifiedNetworkManager {
      * @param <MSG> 消息类型
      */
     public <MSG> void sendToTrackingAndSelf(MSG packet, net.minecraft.world.entity.Entity entity) {
-        channel.send(packet, PacketDistributor.TRACKING_ENTITY_AND_SELF.with(entity));
+        channel.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity), packet);
     }
     
     /**

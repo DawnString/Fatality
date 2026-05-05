@@ -1,6 +1,7 @@
 package cn.dawnstring.fatality.registry;
 
 import cn.dawnstring.fatality.entity.*;
+import cn.dawnstring.fatality.entity.boss.enderdragon.DragonFlameBall;
 import cn.dawnstring.fatality.entity.projectile.*;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -525,6 +526,16 @@ public class ModEntities
                             .clientTrackingRange(10)
                             .updateInterval(2)
                             .build("training_puppet"));
+
+    // 龙炎法球实体
+    public static final RegistryObject<EntityType<DragonFlameBall>> DRAGON_FLAME_BALL =
+            ModRegistry.ENTITIES.register("dragon_flame_ball",
+                    () -> EntityType.Builder.<DragonFlameBall>of(DragonFlameBall::new, MobCategory.MISC)
+                            .sized(2.0f, 2.0f)
+                            .clientTrackingRange(16)
+                            .updateInterval(1)
+                            .fireImmune()
+                            .build("dragon_flame_ball"));
 
     // PolarizingPrism的偏光棱镜激光投射物实体
     public static final RegistryObject<EntityType<PolarizingPrismLaserProjectile>> POLARIZING_PRISM_LASER_PROJECTILE =

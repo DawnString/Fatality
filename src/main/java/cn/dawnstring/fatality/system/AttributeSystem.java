@@ -4,6 +4,7 @@ import cn.dawnstring.fatality.api.attributes.AttributeCalculator;
 import cn.dawnstring.fatality.api.attributes.AttributeModifier;
 import cn.dawnstring.fatality.api.attributes.IAttributeSystem;
 import cn.dawnstring.fatality.api.events.PlayerAttributeEvent;
+import cn.dawnstring.fatality.api.systems.IModSystem;
 import cn.dawnstring.fatality.core.events.FatalityEventBus;
 import cn.dawnstring.fatality.items.AccessoryItem;
 import cn.dawnstring.fatality.items.accessory.HeartOfTheElements;
@@ -27,7 +28,7 @@ import java.util.function.Function;
  * 属性系统 - 管理玩家的各种属性计算（重构版）
  * 基于事件驱动架构重构
  */
-public class AttributeSystem implements IAttributeSystem
+public class AttributeSystem implements IAttributeSystem, IModSystem
 {
     // 属性计算器映射
     private static final Map<String, AttributeCalculator> ATTRIBUTE_CALCULATORS = new ConcurrentHashMap<>();
@@ -130,6 +131,26 @@ public class AttributeSystem implements IAttributeSystem
      */
     public static AttributeSystem getInstance() {
         return INSTANCE;
+    }
+    
+    @Override
+    public String getSystemId() {
+        return "attribute";
+    }
+    
+    @Override
+    public void initialize() {
+        // 系统初始化逻辑
+    }
+    
+    @Override
+    public void onPlayerJoin(Player player) {
+        initializePlayer(player);
+    }
+    
+    @Override
+    public void onPlayerLeave(Player player) {
+        cleanupPlayerData(player);
     }
     
     private static final AttributeSystem INSTANCE = new AttributeSystem();

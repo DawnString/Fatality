@@ -5,6 +5,7 @@ import cn.dawnstring.fatality.api.plugins.IPlugin;
 import cn.dawnstring.fatality.api.plugins.PluginContext;
 import cn.dawnstring.fatality.api.systems.IModSystem;
 import cn.dawnstring.fatality.core.events.FatalityEventBus;
+import cn.dawnstring.fatality.core.events.UnifiedEventBus;
 import cn.dawnstring.fatality.core.systems.SystemRegistry;
 
 import java.io.File;
@@ -229,14 +230,31 @@ public class PluginManager {
      * 注册事件监听器
      * @param pluginId 插件ID
      * @param eventClass 事件类型
-     * @param listener 监听器
+     * @param listener 监听器对象
      * @param <T> 事件类型
      */
     public <T> void registerEventListener(String pluginId, Class<T> eventClass, Object listener) {
         List<Object> listeners = eventListeners.computeIfAbsent(eventClass, k -> new ArrayList<>());
         listeners.add(listener);
         
-        FatalityEventBus.getInstance().registerListener(eventClass, listener);
+        // 使用UnifiedEventBus支持Object类型的监听器
+        UnifiedEventBus.getInstance().registerListener(eventClass, listener);
+        Fatality.LOGGER.debug("Event listener registered for plugin: {}", pluginId);
+    }
+    
+    /**
+     * 注册事件监听器（函数式）
+     * @param pluginId 插件ID
+     * @param eventClass 事件类型
+     * @param consumer 事件处理器
+     * @param <T> 事件类型
+     */
+    public <T> void registerEventListener(String pluginId, Class<T> eventClass, java.util.function.Consumer<T> consumer) {
+        List<Object> listeners = eventListeners.computeIfAbsent(eventClass, k -> new ArrayList<>());
+        listeners.add(consumer);
+        
+        // 使用UnifiedEventBus支持Consumer类型的监听器
+        UnifiedEventBus.getInstance().registerListener(eventClass, consumer);
         Fatality.LOGGER.debug("Event listener registered for plugin: {}", pluginId);
     }
     

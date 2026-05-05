@@ -1,6 +1,7 @@
 package cn.dawnstring.fatality.client.renderer.boss.enderdragon;
 
 import cn.dawnstring.fatality.entity.boss.enderdragon.DragonFlameBall;
+import net.minecraft.resources.ResourceLocation;
 import software.bernie.geckolib.model.GeoModel;
 
 public class DragonFlameBallModel extends GeoModel<DragonFlameBall> {

@@ -6,9 +6,9 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import cn.dawnstring.fatality.damage.DragonfireDamageSource;
 
-public class DragonfireBurnEffect extends MobEffect
+public class DragonFlameBurnEffect extends MobEffect
 {
-    public DragonfireBurnEffect()
+    public DragonFlameBurnEffect()
     {
         super(MobEffectCategory.HARMFUL, 0xDC143C); // 深红色，代表龙炎效果
     }

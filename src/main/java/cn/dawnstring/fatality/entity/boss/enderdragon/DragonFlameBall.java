@@ -1,5 +1,6 @@
 package cn.dawnstring.fatality.entity.boss.enderdragon;
 
+import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -25,7 +26,7 @@ public class DragonFlameBall extends Entity implements GeoEntity {
     private LivingEntity target;
     private float damage;
     private int lifetime;
-    private final int maxLifetime;
+    private int maxLifetime;
     private boolean isProtective;
 
     public DragonFlameBall(EntityType<? extends DragonFlameBall> type, Level level) {
@@ -33,14 +34,11 @@ public class DragonFlameBall extends Entity implements GeoEntity {
         this.maxLifetime = 400;
         this.lifetime = 0;
         this.isProtective = false;
+        this.setNoGravity(true);
     }
 
-    public DragonFlameBall(Level level, LivingEntity owner, LivingEntity target, float damage, boolean isProtective) {
-        this(level, owner, target, damage, isProtective, 400);
-    }
-
-    public DragonFlameBall(Level level, LivingEntity owner, LivingEntity target, float damage, boolean isProtective, int lifetime) {
-        super(null, level);
+    public DragonFlameBall(EntityType<? extends DragonFlameBall> type, Level level, LivingEntity owner, LivingEntity target, float damage, boolean isProtective, int lifetime) {
+        super(type, level);
         this.owner = owner;
         this.target = target;
         this.damage = damage;
@@ -56,6 +54,17 @@ public class DragonFlameBall extends Entity implements GeoEntity {
         super.tick();
         
         if (this.level().isClientSide()) {
+            if (isProtective && owner != null && owner.isAlive()) {
+                double angle = (this.tickCount * 0.1) % (Math.PI * 2);
+                double radius = 3.0;
+                double yOffset = 2.0;
+                
+                double x = owner.getX() + Math.cos(angle) * radius;
+                double y = owner.getY() + yOffset + Math.sin(angle * 2) * 0.5;
+                double z = owner.getZ() + Math.sin(angle) * radius;
+                
+                this.setPos(x, y, z);
+            }
             return;
         }
         
@@ -94,7 +103,6 @@ public class DragonFlameBall extends Entity implements GeoEntity {
 
     private void tickAttack() {
         if (target == null || !target.isAlive()) {
-            this.discard();
             return;
         }
         
@@ -113,7 +121,7 @@ public class DragonFlameBall extends Entity implements GeoEntity {
             this.getZ() + velocity.z
         );
         
-        this.lookAt(target, 30.0f, 30.0f);
+        this.lookAt(EntityAnchorArgument.Anchor.EYES, targetPos);
     }
 
     private void checkCollisions() {
@@ -138,11 +146,9 @@ public class DragonFlameBall extends Entity implements GeoEntity {
                     entity.hurt(this.damageSources().mobAttack(owner), damage);
                 }
             } else {
-                if (entity == target || entity == owner) {
-                    entity.hurt(this.damageSources().mobAttack(owner), damage);
-                    this.discard();
-                    return;
-                }
+                entity.hurt(this.damageSources().mobAttack(owner), damage);
+                this.discard();
+                return;
             }
         }
     }
@@ -227,5 +233,14 @@ public class DragonFlameBall extends Entity implements GeoEntity {
 
     public void setProtective(boolean protective) {
         isProtective = protective;
+    }
+
+    public int getLifetime() {
+        return lifetime;
+    }
+
+    public void setLifetime(int lifetime) {
+        this.lifetime = lifetime;
+        this.maxLifetime = lifetime;
     }
 }

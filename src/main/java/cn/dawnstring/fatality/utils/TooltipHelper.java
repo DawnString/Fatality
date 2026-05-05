@@ -1,4 +1,4 @@
-package cn.dawnstring.fatality.util;
+package cn.dawnstring.fatality.utils;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;

@@ -52,7 +52,7 @@ public class ModEffects
         // 注册诅咒火焰效果
         CURSE_FIRE_BURNING = ModRegistry.EFFECTS.register("curse_fire_burning", CurseFireBurningEffect::new);
         // 注册龙炎焚烧效果
-        DRAGONFIRE_BURN = ModRegistry.EFFECTS.register("dragonfire_burn", DragonfireBurnEffect::new);
+        DRAGONFIRE_BURN = ModRegistry.EFFECTS.register("dragonfire_burn", DragonFlameBurnEffect::new);
         // 注册屠龙者祝福效果
         DRAGON_SLAYER_BLESSING = ModRegistry.EFFECTS.register("dragon_slayer_blessing", DragonSlayerBlessingEffect::new);
         // 注册星光标记效果

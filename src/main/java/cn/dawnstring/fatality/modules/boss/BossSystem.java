@@ -1,6 +1,7 @@
 package cn.dawnstring.fatality.modules.boss;
 
 import cn.dawnstring.fatality.api.events.FatalityEvent;
+import cn.dawnstring.fatality.api.systems.IModSystem;
 import cn.dawnstring.fatality.core.events.FatalityEventBus;
 import net.minecraft.world.entity.player.Player;
 
@@ -8,7 +9,7 @@ import net.minecraft.world.entity.player.Player;
  * BOSS系统模块
  * 基于事件驱动的BOSS战斗系统
  */
-public class BossSystem {
+public class BossSystem implements IModSystem {
     
     private static final BossSystem INSTANCE = new BossSystem();
     
@@ -21,9 +22,12 @@ public class BossSystem {
         return INSTANCE;
     }
     
-    /**
-     * 初始化BOSS系统
-     */
+    @Override
+    public String getSystemId() {
+        return "boss";
+    }
+    
+    @Override
     public void initialize() {
         System.out.println("Boss System initialized");
     }
@@ -50,10 +54,6 @@ public class BossSystem {
         float newValue = event.getNewValue();
         
         // 根据属性变化调整BOSS难度或行为
-        if (attributeId.equals("attack_damage") && newValue > 50.0f) {
-            // 玩家攻击力超过50，触发BOSS增强
-            enhanceBossForPlayer(player);
-        }
     }
     
     /**
