@@ -61,7 +61,7 @@ public class JungleWhip extends BaseWeapon {
             public Ingredient getRepairIngredient() {
                 return Ingredient.of(net.minecraft.world.item.Items.VINE); // 修复材料：藤蔓
             }
-        }, new Properties(), 0, 0.25f, 1f, 0.3f, 4.0f, 0.3f, WeaponEnum.MELEE);
+        }, new Properties(), (int)BASE_DAMAGE, 0.25f, 1f, 0.3f, 4.0f, 0.3f, WeaponEnum.MELEE);
         
         // 设置武器故事
         this.story = "一把来自丛林深处的神秘鞭子，由古老的藤蔓编织而成。" +
@@ -170,32 +170,7 @@ public class JungleWhip extends BaseWeapon {
      * 计算鞭子伤害
      */
     private float calculateWhipDamage(Player player) {
-        // 使用BaseWeapon的伤害计算逻辑，但基于魔法伤害
-        float baseDamage = BASE_DAMAGE;
-
-        // 计算基础伤害加成（基于饰品）
-        float accessoryBaseBonus = calculateAccessoryBaseBonus(player);
-
-        // 计算其他伤害加成（饰品、药水等）
-        float otherBonus = calculateOtherBonus(player);
-
-        // 计算伤害浮动值
-        float fluctuation = calculateDamageFluctuation();
-
-        // 判断是否暴击
-        boolean isCritical = isCriticalHit(player);
-
-        float finalDamage;
-        if (isCritical) {
-            // 暴击伤害公式（与BaseWeapon保持一致）
-            float criticalBonus = getCriticalDamageMultiplier(player);
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.8f * criticalBonus * fluctuation;
-        } else {
-            // 普通伤害公式（与BaseWeapon保持一致）
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.9f * fluctuation;
-        }
-
-        return Math.max(0, finalDamage);
+        return calculateFinalDamage(player, player.getMainHandItem(), null);
     }
 
     /**

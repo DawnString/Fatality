@@ -71,13 +71,13 @@ public class HolyFlameJudgment extends BaseWeapon {
                 return Ingredient.of(Items.NETHERITE_INGOT); // 修复材料：下界合金锭
             }
         }, new Properties().stacksTo(1).fireResistant(), 
-              0, // 基础攻击伤害（由子弹伤害决定）
-              1.0f, // 攻击速度
-              1.0f, // 基础伤害倍率
-              0.20f, // 暴击率20%
-              0.30f, // 暴击伤害倍率30%
-              0.3f, // 伤害浮动
-              WeaponEnum.RANGED // 武器类型：远程
+              (int)BASE_BULLET_DAMAGE,
+              1.0f,
+              1.0f,
+              0.20f,
+              0.30f,
+              0.3f,
+              WeaponEnum.RANGED
         );
         
         setStory("圣炎裁决是一把拥有双模式的神圣狙击枪。净化模式能够标记并点燃敌人，而引爆模式则能引爆标记造成毁灭性爆炸。");

@@ -2,6 +2,7 @@ package cn.dawnstring.fatality.items.weapon.magic;
 
 import cn.dawnstring.fatality.items.BaseWeapon;
 import cn.dawnstring.fatality.items.WeaponEnum;
+import cn.dawnstring.fatality.system.ManaSystem;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -21,10 +22,10 @@ import net.minecraft.world.phys.Vec3;
  */
 public class BookOfCorruption extends BaseWeapon
 {
-    private static final int COOLDOWN_TICKS = 5; // 短冷却时间，支持连续攻击
-    private static final float BASE_DAMAGE_PER_TICK = 19.0f; // 每秒基础魔法伤害
-    private static final float MAX_RANGE = 12.0f; // 最大链接距离
-    private static final int LINK_DURATION = 60; // 链接持续时间（3秒）
+    private static final int COOLDOWN_TICKS = 5;
+    private static final float BASE_DAMAGE_PER_TICK = 19.0f;
+    private static final float MANA_COST = 2.0f;
+    private static final float MAX_RANGE = 12.0f;
 
     public BookOfCorruption()
     {
@@ -58,7 +59,7 @@ public class BookOfCorruption extends BaseWeapon
             public Ingredient getRepairIngredient() {
                 return null;
             }
-        }, new Properties(), 0, 0.05f, 1.0f, 0.0f, 0.0f, 0.0f, WeaponEnum.MAGIC);
+        }, new Properties(), (int)BASE_DAMAGE_PER_TICK, 0.05f, 1.0f, 0.0f, 0.0f, 0.0f, WeaponEnum.MAGIC);
         
         setStory("一本蕴含腐化力量的魔法书，能够通过魔法链接持续侵蚀敌人的生命力。每秒消耗2点魔法值。");
     }
@@ -68,29 +69,31 @@ public class BookOfCorruption extends BaseWeapon
         ItemStack itemstack = player.getItemInHand(hand);
 
         if (!level.isClientSide()) {
-            // 寻找最近的敌人
+            if (!ManaSystem.safeConsumeMana(player, MANA_COST)) {
+                player.displayClientMessage(
+                        net.minecraft.network.chat.Component.literal("§c魔力不足！"),
+                        true
+                );
+                return InteractionResultHolder.fail(itemstack);
+            }
+
             LivingEntity target = findNearestTarget(level, player);
             
             if (target != null) {
-                // 创建腐化链接
                 createCorruptionLink(level, player, target);
                 
-                // 播放链接音效
                 level.playSound(null, player.getX(), player.getY(), player.getZ(),
                         SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 0.8F, 0.6F);
             } else {
-                // 没有找到目标，播放失败音效
                 level.playSound(null, player.getX(), player.getY(), player.getZ(),
                         SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 0.5F, 1.5F);
             }
         }
 
-        // 在客户端生成魔法粒子效果
         if (level.isClientSide()) {
             spawnMagicParticles(level, player);
         }
 
-        // 设置短冷却时间
         player.getCooldowns().addCooldown(this, COOLDOWN_TICKS);
 
         return InteractionResultHolder.success(itemstack);
@@ -123,47 +126,14 @@ public class BookOfCorruption extends BaseWeapon
      */
     private void createCorruptionLink(Level level, Player player, LivingEntity target) {
         // 计算链接伤害
-        float damagePerTick = calculateLinkDamage(player);
+        float damagePerTick = calculateFinalDamage(player, null, null);
         
         // 开始链接效果
         startLinkEffect(level, player, target, damagePerTick);
     }
 
-    /**
-     * 计算链接伤害
-     */
-    private float calculateLinkDamage(Player player) {
-        float baseDamage = BASE_DAMAGE_PER_TICK;
-        float accessoryBaseBonus = calculateAccessoryBaseBonus(player);
-        float otherBonus = calculateOtherBonus(player);
-        float fluctuation = calculateDamageFluctuation();
-        boolean isCritical = isCriticalHit(player);
-
-        float finalDamage;
-        if (isCritical) {
-            float criticalBonus = getCriticalDamageMultiplier(player);
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.8f * criticalBonus * fluctuation;
-        } else {
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.9f * fluctuation;
-        }
-
-        return Math.max(1.0f, finalDamage); // 确保至少1点伤害
-    }
-
-    /**
-     * 开始链接效果
-     */
     private void startLinkEffect(Level level, Player player, LivingEntity target, float damagePerTick) {
-        // 这里应该实现一个持续的效果系统
-        // 由于时间限制，我们使用简化版本：立即造成伤害
-        
-        // 立即造成伤害
         target.hurt(target.damageSources().magic(), damagePerTick);
-        
-        // 在客户端生成链接粒子效果
-        if (level.isClientSide()) {
-            spawnLinkParticles(level, player, target);
-        }
     }
 
     /**
@@ -196,47 +166,6 @@ public class BookOfCorruption extends BaseWeapon
                         (Math.random() - 0.5) * 0.05,
                         Math.random() * 0.05,
                         (Math.random() - 0.5) * 0.05);
-            }
-        }
-    }
-
-    /**
-     * 生成链接粒子效果
-     */
-    private void spawnLinkParticles(Level level, Player player, LivingEntity target) {
-        if (level.isClientSide()) {
-            Vec3 playerPos = player.getEyePosition();
-            Vec3 targetPos = target.getEyePosition();
-            
-            // 计算链接方向
-            Vec3 direction = targetPos.subtract(playerPos);
-            double distance = direction.length();
-            direction = direction.normalize();
-            
-            // 沿着链接路径生成粒子
-            for (int i = 0; i < 20; i++) {
-                double progress = (double) i / 20.0;
-                Vec3 particlePos = playerPos.add(direction.scale(distance * progress));
-                
-                // 生成腐化链接粒子
-                level.addParticle(ParticleTypes.DRAGON_BREATH,
-                        particlePos.x,
-                        particlePos.y,
-                        particlePos.z,
-                        (Math.random() - 0.5) * 0.02,
-                        (Math.random() - 0.5) * 0.02,
-                        (Math.random() - 0.5) * 0.02);
-                
-                // 生成绿色腐化粒子
-                if (i % 4 == 0) {
-                    level.addParticle(ParticleTypes.SPORE_BLOSSOM_AIR,
-                            particlePos.x,
-                            particlePos.y,
-                            particlePos.z,
-                            direction.x * 0.1,
-                            direction.y * 0.1,
-                            direction.z * 0.1);
-                }
             }
         }
     }

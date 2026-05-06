@@ -2,6 +2,7 @@ package cn.dawnstring.fatality.items.weapon.magic;
 
 import cn.dawnstring.fatality.items.BaseWeapon;
 import cn.dawnstring.fatality.items.WeaponEnum;
+import cn.dawnstring.fatality.system.ManaSystem;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -42,10 +43,11 @@ public class StaffOfOrigins extends BaseWeapon {
     // 右键技能参数
     private static final int INVINCIBILITY_DURATION = 100; // 无敌状态持续时间5秒（100ticks）
     private static final float DAMAGE_BOOST_MULTIPLIER = 0.20f; // 伤害提升20%
-    private static final int COOLDOWN_TICKS = 400; // 冷却时间20秒（400ticks）
+    private static final int COOLDOWN_TICKS = 400;
+    private static final float MANA_COST_SHIELD = 20.0f;
+    private static final float MANA_COST_ATTACK = 5.0f;
     
-    // 技能状态
-    private long lastSkillUseTime = 0; // 上次使用技能的时间
+    private long lastSkillUseTime = 0;
     
     public StaffOfOrigins() {
         super(new Tier() {
@@ -96,7 +98,6 @@ public class StaffOfOrigins extends BaseWeapon {
         // 检查冷却时间
         long currentTime = level.getGameTime();
         if (currentTime - lastSkillUseTime < COOLDOWN_TICKS) {
-            // 技能还在冷却中
             if (level.isClientSide()) {
                 player.displayClientMessage(net.minecraft.network.chat.Component.literal(
                     "§c技能冷却中..."), true);
@@ -104,7 +105,14 @@ public class StaffOfOrigins extends BaseWeapon {
             return InteractionResultHolder.fail(itemstack);
         }
         
-        // 激活起源护盾
+        if (!ManaSystem.safeConsumeMana(player, MANA_COST_SHIELD)) {
+            if (level.isClientSide()) {
+                player.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                    "§c魔力不足！"), true);
+            }
+            return InteractionResultHolder.fail(itemstack);
+        }
+        
         activateOriginShield(player, level);
         
         // 更新技能使用时间
@@ -171,8 +179,9 @@ public class StaffOfOrigins extends BaseWeapon {
     protected void onHitEnemy(Player player, LivingEntity target, ItemStack stack, float damage) {
         super.onHitEnemy(player, target, stack, damage);
         
-        // 释放魔法粒子攻击周围敌人
-        releaseMagicParticles(player, player.level());
+        if (ManaSystem.safeConsumeMana(player, MANA_COST_ATTACK)) {
+            releaseMagicParticles(player, player.level());
+        }
     }
     
     /**

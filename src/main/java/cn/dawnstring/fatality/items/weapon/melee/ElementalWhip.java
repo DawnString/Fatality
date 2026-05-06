@@ -70,7 +70,7 @@ public class ElementalWhip extends BaseWeapon {
                 return null; // 不能修复
             }
         }, new Properties().fireResistant(),
-              0, // 基础攻击伤害（使用魔法伤害计算）
+              (int)BASE_DAMAGE, // 基础攻击伤害
               0.25f, // 攻击速度（0.25秒）
               1.0f, // 基础伤害倍率
               0.30f, // 暴击率
@@ -200,32 +200,7 @@ public class ElementalWhip extends BaseWeapon {
      * 计算元素鞭伤害
      */
     private float calculateElementalWhipDamage(Player player, ItemStack stack) {
-        // 使用BaseWeapon的伤害计算逻辑
-        float baseDamage = BASE_DAMAGE;
-
-        // 计算基础伤害加成（基于饰品）
-        float accessoryBaseBonus = calculateAccessoryBaseBonus(player);
-
-        // 计算其他伤害加成（饰品、药水等）
-        float otherBonus = calculateOtherBonus(player);
-
-        // 计算伤害浮动值
-        float fluctuation = calculateDamageFluctuation();
-
-        // 判断是否暴击
-        boolean isCritical = isCriticalHit(player);
-
-        float finalDamage;
-        if (isCritical) {
-            // 暴击伤害公式（与BaseWeapon保持一致）
-            float criticalBonus = getCriticalDamageMultiplier(player);
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.8f * criticalBonus * fluctuation;
-        } else {
-            // 普通伤害公式（与BaseWeapon保持一致）
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.9f * fluctuation;
-        }
-
-        return Math.max(0, finalDamage);
+        return calculateFinalDamage(player, stack, null);
     }
     
     /**

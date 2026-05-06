@@ -58,7 +58,7 @@ public class CelestialStar extends BaseWeapon
             public Ingredient getRepairIngredient() {
                 return null; // 不能修复
             }
-        }, new Properties(), 0, 1.0f, 1f, 0.24f, 0.32f, 0.4f, WeaponEnum.MAGIC);
+        }, new Properties(), (int)BASE_MAGIC_DAMAGE, 1.0f, 1f, 0.24f, 0.32f, 0.4f, WeaponEnum.MAGIC);
         
         setStory("一把能够召唤天星的神秘魔法武器，从天空召唤陨石般的星辰，对目标及其周围敌人造成毁灭性打击。");
     }
@@ -121,7 +121,7 @@ public class CelestialStar extends BaseWeapon
      */
     private void summonCelestialStar(Level level, Player player, ItemStack itemstack, net.minecraft.world.phys.Vec3 targetPos) {
         // 计算天星伤害
-        float starDamage = calculateStarDamage(player, itemstack);
+        float starDamage = calculateFinalDamage(player, itemstack, null);
         
         // 创建天星投射物
         CelestialStarProjectile star = new CelestialStarProjectile(level, player, starDamage, AOE_RADIUS);
@@ -136,40 +136,6 @@ public class CelestialStar extends BaseWeapon
         // 添加到世界
         level.addFreshEntity(star);
     }
-    
-    /**
-     * 计算天星伤害（使用BaseWeapon相同的计算方法）
-     */
-    public float calculateStarDamage(Player player, ItemStack stack) {
-        // 使用BaseWeapon的伤害计算逻辑，但基于魔法伤害
-        float baseDamage = BASE_MAGIC_DAMAGE;
-
-        // 计算基础伤害加成（基于饰品）
-        float accessoryBaseBonus = calculateAccessoryBaseBonus(player);
-
-        // 计算其他伤害加成（饰品、药水等）
-        float otherBonus = calculateOtherBonus(player);
-
-        // 计算伤害浮动值
-        float fluctuation = calculateDamageFluctuation();
-
-        // 判断是否暴击
-        boolean isCritical = isCriticalHit(player);
-
-        float finalDamage;
-        if (isCritical) {
-            // 暴击伤害公式（与BaseWeapon保持一致）
-            float criticalBonus = getCriticalDamageMultiplier(player);
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.8f * criticalBonus * fluctuation;
-        } else {
-            // 普通伤害公式（与BaseWeapon保持一致）
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.9f * fluctuation;
-        }
-
-        return Math.max(0, finalDamage);
-    }
-    
-
     
     /**
      * 重写暴击特效，添加天星特有的暴击效果

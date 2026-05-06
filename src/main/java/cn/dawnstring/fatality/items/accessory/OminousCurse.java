@@ -1,7 +1,6 @@
 package cn.dawnstring.fatality.items.accessory;
 
 import cn.dawnstring.fatality.items.AccessoryItem;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
@@ -14,76 +13,13 @@ public class OminousCurse extends AccessoryItem
 
     @Override
     public void applyEffects(Player player, ItemStack stack) {
-        // 先调用父类的效果应用
         super.applyEffects(player, stack);
-
-        // 添加负面效果免疫
         applyNegativeEffectImmunity(player);
     }
 
     @Override
     public void removeEffects(Player player, ItemStack stack) {
-        // 移除负面效果免疫
         removeNegativeEffectImmunity(player);
-
-        // 调用父类的效果移除
         super.removeEffects(player, stack);
-    }
-
-    /**
-     * 应用负面效果免疫
-     */
-    private void applyNegativeEffectImmunity(Player player) {
-        // 免疫中毒效果
-        if (player.hasEffect(MobEffects.POISON)) {
-            player.removeEffect(MobEffects.POISON);
-        }
-
-        // 免疫凋零效果
-        if (player.hasEffect(MobEffects.WITHER)) {
-            player.removeEffect(MobEffects.WITHER);
-        }
-
-        // 免疫缓慢效果
-        if (player.hasEffect(MobEffects.MOVEMENT_SLOWDOWN)) {
-            player.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
-        }
-
-        // 免疫挖掘疲劳效果
-        if (player.hasEffect(MobEffects.DIG_SLOWDOWN)) {
-            player.removeEffect(MobEffects.DIG_SLOWDOWN);
-        }
-
-        // 免疫反胃效果
-        if (player.hasEffect(MobEffects.CONFUSION)) {
-            player.removeEffect(MobEffects.CONFUSION);
-        }
-
-        // 免疫饥饿效果
-        if (player.hasEffect(MobEffects.HUNGER)) {
-            player.removeEffect(MobEffects.HUNGER);
-        }
-
-        // 免疫失明效果
-        if (player.hasEffect(MobEffects.BLINDNESS)) {
-            player.removeEffect(MobEffects.BLINDNESS);
-        }
-
-        // 免疫虚弱效果
-        if (player.hasEffect(MobEffects.WEAKNESS)) {
-            player.removeEffect(MobEffects.WEAKNESS);
-        }
-
-        // 免疫黑暗效果
-        if (player.hasEffect(MobEffects.DARKNESS)) {
-            player.removeEffect(MobEffects.DARKNESS);
-        }
-    }
-
-    /**
-     * 移除负面效果免疫（主要是清理工作）
-     */
-    private void removeNegativeEffectImmunity(Player player)
-    {
     }
 }

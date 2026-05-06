@@ -58,7 +58,7 @@ public class BloodArrowStaff extends BaseWeapon
             public Ingredient getRepairIngredient() {
                 return null;
             }
-        }, new Properties(), 0, 0.25f, 1f, 0.10f, 0.10f, 0.3f, WeaponEnum.MAGIC);
+        }, new Properties(), (int)BASE_BLOOD_ARROW_DAMAGE, 0.25f, 1f, 0.10f, 0.10f, 0.3f, WeaponEnum.MAGIC);
     }
 
     @Override
@@ -76,7 +76,7 @@ public class BloodArrowStaff extends BaseWeapon
 
         if (!level.isClientSide()) {
             // 计算血箭伤害
-            float bloodArrowDamage = calculateBloodArrowDamage(player, itemstack);
+            float bloodArrowDamage = calculateFinalDamage(player, itemstack, null);
 
             // 创建血箭投射物
             Arrow bloodArrow = new BloodArrow(level, player);
@@ -148,41 +148,6 @@ public class BloodArrowStaff extends BaseWeapon
         }
     }
 
-    /**
-     * 计算血箭伤害（使用BaseWeapon相同的计算方法）
-     */
-    public float calculateBloodArrowDamage(Player player, ItemStack stack) {
-        // 使用BaseWeapon的伤害计算逻辑，但基于血箭伤害
-        float baseDamage = BASE_BLOOD_ARROW_DAMAGE;
-
-        // 计算基础伤害加成（基于饰品）
-        float accessoryBaseBonus = calculateAccessoryBaseBonus(player);
-
-        // 计算其他伤害加成（饰品、药水等）
-        float otherBonus = calculateOtherBonus(player);
-
-        // 计算伤害浮动值
-        float fluctuation = calculateDamageFluctuation();
-
-        // 判断是否暴击
-        boolean isCritical = isCriticalHit(player);
-
-        float finalDamage;
-        if (isCritical) {
-            // 暴击伤害公式（与BaseWeapon保持一致）
-            float criticalBonus = getCriticalDamageMultiplier(player);
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.8f * criticalBonus * fluctuation;
-        } else {
-            // 普通伤害公式（与BaseWeapon保持一致）
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.9f * fluctuation;
-        }
-
-        return Math.max(0, finalDamage);
-    }
-
-    /**
-     * 重写暴击特效，添加血箭特有的暴击效果
-     */
     @Override
     protected void onCriticalHit(Player player, LivingEntity target, float damage) {
         super.onCriticalHit(player, target, damage);

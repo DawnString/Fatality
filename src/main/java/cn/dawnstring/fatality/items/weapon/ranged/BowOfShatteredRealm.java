@@ -61,7 +61,7 @@ public class BowOfShatteredRealm extends BaseWeapon
             public Ingredient getRepairIngredient() {
                 return null; // 不能修复
             }
-        }, new Properties().fireResistant(), 0, 1.0f, 1f, 0.32f, 0.34f, 0.2f, WeaponEnum.RANGED);
+        }, new Properties().fireResistant(), (int)BASE_ARROW_DAMAGE, 1.0f, 1f, 0.32f, 0.34f, 0.2f, WeaponEnum.RANGED);
         
         setStory("破碎领域之弓，蕴含着撕裂空间的力量。\n" +
                 "射出的箭矢无视重力，命中目标后会在该位置创造空间坍缩，\n" +
@@ -104,35 +104,7 @@ public class BowOfShatteredRealm extends BaseWeapon
         return InteractionResultHolder.sidedSuccess(itemstack, level.isClientSide());
     }
 
-    /**
-     * 计算箭矢伤害（使用BaseWeapon相同的计算方法）
-     */
     public float calculateArrowDamage(Player player, ItemStack stack) {
-        // 使用BaseWeapon的伤害计算逻辑，但基于箭矢伤害
-        float baseDamage = BASE_ARROW_DAMAGE;
-
-        // 计算基础伤害加成（基于饰品）
-        float accessoryBaseBonus = calculateAccessoryBaseBonus(player);
-
-        // 计算其他伤害加成（饰品、药水等）
-        float otherBonus = calculateOtherBonus(player);
-
-        // 计算伤害浮动值
-        float fluctuation = calculateDamageFluctuation();
-
-        // 判断是否暴击
-        boolean isCritical = isCriticalHit(player);
-
-        float finalDamage;
-        if (isCritical) {
-            // 暴击伤害公式（与BaseWeapon保持一致）
-            float criticalBonus = getCriticalDamageMultiplier(player);
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.8f * criticalBonus * fluctuation;
-        } else {
-            // 普通伤害公式（与BaseWeapon保持一致）
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.9f * fluctuation;
-        }
-
-        return Math.max(0, finalDamage);
+        return calculateFinalDamage(player, stack, null);
     }
 }

@@ -94,13 +94,13 @@ public class ElementJudgment extends BaseWeapon {
                 return Ingredient.of(Items.NETHERITE_INGOT); // 修复材料：下界合金锭
             }
         }, new Properties().stacksTo(1).fireResistant(), 
-              0, // 基础攻击伤害（由子弹伤害决定）
-              1.0f, // 攻击速度
-              1.0f, // 基础伤害倍率
-              0.28f, // 暴击率28%
-              0.35f, // 暴击伤害倍率35%
-              0.3f, // 伤害浮动
-              WeaponEnum.RANGED // 武器类型：远程
+              (int)BASE_BULLET_DAMAGE,
+              1.0f,
+              1.0f,
+              0.28f,
+              0.35f,
+              0.3f,
+              WeaponEnum.RANGED
         );
         
         setStory("元素裁决是一把能够切换冰、火、雷三种元素形态的神圣狙击枪。每种形态都有独特的攻击效果，能够应对不同的战斗需求。");

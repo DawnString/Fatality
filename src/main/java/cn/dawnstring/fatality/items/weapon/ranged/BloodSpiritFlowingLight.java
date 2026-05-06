@@ -58,7 +58,7 @@ public class BloodSpiritFlowingLight extends BaseWeapon
             public Ingredient getRepairIngredient() {
                 return null;
             }
-        }, new Properties(), 0, 0.8f, 1.2f, 0.15f, 0.1f, 0.12f, WeaponEnum.RANGED);
+        }, new Properties(), (int)BASE_DAMAGE, 0.8f, 1.2f, 0.15f, 0.1f, 0.12f, WeaponEnum.RANGED);
         
         setStory("一把蕴含血灵力量的追踪狙击枪，能够自动锁定目标并吸取敌人的生命力来治疗使用者。");
     }
@@ -139,25 +139,8 @@ public class BloodSpiritFlowingLight extends BaseWeapon
         level.addFreshEntity(bullet);
     }
 
-    /**
-     * 计算子弹伤害
-     */
     private float calculateBulletDamage(Player player) {
-        float baseDamage = BASE_DAMAGE;
-        float accessoryBaseBonus = calculateAccessoryBaseBonus(player);
-        float otherBonus = calculateOtherBonus(player);
-        float fluctuation = calculateDamageFluctuation();
-        boolean isCritical = isCriticalHit(player);
-
-        float finalDamage;
-        if (isCritical) {
-            float criticalBonus = getCriticalDamageMultiplier(player);
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.8f * criticalBonus * fluctuation;
-        } else {
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.9f * fluctuation;
-        }
-
-        return Math.max(1.0f, finalDamage); // 确保至少1点伤害
+        return calculateFinalDamage(player, player.getMainHandItem(), null);
     }
 
     /**

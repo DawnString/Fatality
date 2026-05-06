@@ -63,7 +63,7 @@ public class Ashes extends BaseWeapon
             public Ingredient getRepairIngredient() {
                 return null;
             }
-        }, new Properties(), 0, 0.05f, 1f, 0.14f, 0.15f, 0.2f, WeaponEnum.RANGED);
+        }, new Properties(), (int)BASE_BULLET_DAMAGE, 0.05f, 1f, 0.14f, 0.15f, 0.2f, WeaponEnum.RANGED);
         
         setStory("一把精准的狙击枪，击中目标后子弹会散射，对目标后方的敌人造成锥形区域伤害。");
     }
@@ -124,25 +124,8 @@ public class Ashes extends BaseWeapon
         }
     }
 
-    /**
-     * 计算子弹伤害
-     */
     public float calculateBulletDamage(Player player, ItemStack stack) {
-        float baseDamage = BASE_BULLET_DAMAGE;
-        float accessoryBaseBonus = calculateAccessoryBaseBonus(player);
-        float otherBonus = calculateOtherBonus(player);
-        float fluctuation = calculateDamageFluctuation();
-        boolean isCritical = isCriticalHit(player);
-
-        float finalDamage;
-        if (isCritical) {
-            float criticalBonus = getCriticalDamageMultiplier(player);
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.8f * criticalBonus * fluctuation;
-        } else {
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.9f * fluctuation;
-        }
-
-        return Math.max(0, finalDamage);
+        return calculateFinalDamage(player, stack, null);
     }
 
     /**

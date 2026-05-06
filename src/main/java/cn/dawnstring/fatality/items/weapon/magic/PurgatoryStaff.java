@@ -62,7 +62,7 @@ public class PurgatoryStaff extends BaseWeapon
             public Ingredient getRepairIngredient() {
                 return null;
             }
-        }, new Properties(), 0, 1.0f, 1f, 0.26f, 0.3f, 0.25f, WeaponEnum.MAGIC);
+        }, new Properties(), (int)BASE_MAGIC_DAMAGE, 1.0f, 1f, 0.26f, 0.3f, 0.25f, WeaponEnum.MAGIC);
     }
 
     @Override
@@ -83,7 +83,7 @@ public class PurgatoryStaff extends BaseWeapon
 
         if (!targets.isEmpty()) {
             // 计算死灵飞弹伤害
-            float missileDamage = calculateMissileDamage(player, itemstack);
+            float missileDamage = calculateFinalDamage(player, itemstack, null);
 
             // 对每个目标召唤死灵飞弹（在服务器端创建实体）
             if (!level.isClientSide()) {
@@ -178,35 +178,4 @@ public class PurgatoryStaff extends BaseWeapon
         }
     }
 
-    /**
-     * 计算死灵飞弹伤害（使用BaseWeapon相同的计算方法）
-     */
-    public float calculateMissileDamage(Player player, ItemStack stack) {
-        // 使用BaseWeapon的伤害计算逻辑，但基于魔法伤害
-        float baseDamage = BASE_MAGIC_DAMAGE;
-
-        // 计算基础伤害加成（基于饰品）
-        float accessoryBaseBonus = calculateAccessoryBaseBonus(player);
-
-        // 计算其他伤害加成（饰品、药水等）
-        float otherBonus = calculateOtherBonus(player);
-
-        // 计算伤害浮动值
-        float fluctuation = calculateDamageFluctuation();
-
-        // 判断是否暴击
-        boolean isCritical = isCriticalHit(player);
-
-        float finalDamage;
-        if (isCritical) {
-            // 暴击伤害公式（与BaseWeapon保持一致）
-            float criticalBonus = getCriticalDamageMultiplier(player);
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.8f * criticalBonus * fluctuation;
-        } else {
-            // 普通伤害公式（与BaseWeapon保持一致）
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.9f * fluctuation;
-        }
-
-        return Math.max(0, finalDamage);
-    }
 }

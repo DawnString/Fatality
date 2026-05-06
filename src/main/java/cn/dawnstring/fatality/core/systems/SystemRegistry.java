@@ -2,6 +2,8 @@ package cn.dawnstring.fatality.core.systems;
 
 import cn.dawnstring.fatality.Fatality;
 import cn.dawnstring.fatality.api.systems.IModSystem;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.*;
@@ -180,6 +182,58 @@ public class SystemRegistry {
         });
     }
     
+    /**
+     * 玩家tick时通知所有系统
+     */
+    public static void onPlayerTick(Player player) {
+        systems.values().forEach(system -> {
+            try {
+                system.onPlayerTick(player);
+            } catch (Exception e) {
+                Fatality.LOGGER.error("Error in system.onPlayerTick: " + system.getSystemId(), e);
+            }
+        });
+    }
+
+    /**
+     * 实体死亡时通知所有系统
+     */
+    public static void onLivingDeath(LivingEntity killed) {
+        systems.values().forEach(system -> {
+            try {
+                system.onLivingDeath(killed);
+            } catch (Exception e) {
+                Fatality.LOGGER.error("Error in system.onLivingDeath: " + system.getSystemId(), e);
+            }
+        });
+    }
+
+    /**
+     * 玩家复活时通知所有系统
+     */
+    public static void onPlayerRespawn(Player player) {
+        systems.values().forEach(system -> {
+            try {
+                system.onPlayerRespawn(player);
+            } catch (Exception e) {
+                Fatality.LOGGER.error("Error in system.onPlayerRespawn: " + system.getSystemId(), e);
+            }
+        });
+    }
+
+    /**
+     * 世界加载时通知所有系统
+     */
+    public static void onWorldLoad(ServerLevel level) {
+        systems.values().forEach(system -> {
+            try {
+                system.onWorldLoad(level);
+            } catch (Exception e) {
+                Fatality.LOGGER.error("Error in system.onWorldLoad: " + system.getSystemId(), e);
+            }
+        });
+    }
+
     /**
      * 服务器tick时通知所有系统
      */

@@ -6,7 +6,9 @@
   "refmap": "fatality.refmap.json",
   "mixins": [
     "AttributeMixin",
+    "EndDragonFightMixin",
     "InventoryMenuMixin",
+    "LivingEntityAccessor",
     "PlayerMixin",
     "DamageDisplayerMixin",
     "EnderDragonMixin"
@@ -14,7 +16,8 @@
   "client": [
     "DamageIndicatorMixin",
     "InventoryScreenMixin",
-    "LevelRendererMixin"
+    "LevelRendererMixin",
+    "bossbar.BossBarMixin"
   ],
   "injectors": {
     "defaultRequire": 1

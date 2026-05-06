@@ -1,5 +1,6 @@
 package cn.dawnstring.fatality.items.accessory;
 
+import cn.dawnstring.fatality.Fatality;
 import cn.dawnstring.fatality.items.AccessoryItem;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -14,6 +15,7 @@ import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,6 +24,8 @@ import java.util.UUID;
 @Mod.EventBusSubscriber
 public class CrownOfTheSupremeDemigod extends AccessoryItem
 {
+    private static final Logger LOGGER = Fatality.LOGGER;
+    public static final String ITEM_ID = "crown_of_the_supreme_demigod";
     // 属性修改器UUID
     private static final UUID HEALTH_UUID = UUID.fromString("12345655-1224-1234-1234-127456789abc");
     private static final UUID ARMOR_UUID = UUID.fromString("22345655-1224-1234-1234-127456789abc");
@@ -121,9 +125,8 @@ public class CrownOfTheSupremeDemigod extends AccessoryItem
                 // 检查是否在冷却期内
                 Long lastTriggerTime = damageImmunityCooldownMap.get(playerId);
                 if (lastTriggerTime != null && currentTime - lastTriggerTime < COOLDOWN_DURATION) {
-                    // 冷却中，不触发免疫，但应用减伤效果
                     applyDamageReduction(event);
-                    System.out.println("player damage reduction");
+                    LOGGER.debug("CrownOfTheSupremeDemigod: applying damage reduction");
                     return;
                 }
 
@@ -149,7 +152,7 @@ public class CrownOfTheSupremeDemigod extends AccessoryItem
     private static void applyDamageReduction(LivingHurtEvent event) {
         float originalDamage = event.getAmount();
         float reducedDamage = originalDamage * (1 - DAMAGE_REDUCTION_PERCENTAGE);
-        System.out.println("player damage reduction" + originalDamage + " to " + reducedDamage);
+        LOGGER.debug("player damage reduction to {}", reducedDamage);
         event.setAmount(reducedDamage);
     }
 

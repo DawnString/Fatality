@@ -4,6 +4,7 @@ import cn.dawnstring.fatality.Fatality;
 import cn.dawnstring.fatality.client.model.*;
 import cn.dawnstring.fatality.client.renderer.*;
 import cn.dawnstring.fatality.client.renderer.boss.enderdragon.DragonFlameBallRenderer;
+import cn.dawnstring.fatality.client.renderer.boss.lordofender.*;
 import cn.dawnstring.fatality.registry.ModContainers;
 import cn.dawnstring.fatality.registry.ModEntities;
 import cn.dawnstring.fatality.bosslist.BossListKeyBinding;
@@ -204,6 +205,15 @@ public class ClientRegistry {
 
             // 注册龙炎法球渲染器
             EntityRenderers.register(ModEntities.DRAGON_FLAME_BALL.get(), DragonFlameBallRenderer::new);
+
+            // 注册末影领主相关渲染器
+            EntityRenderers.register(ModEntities.LORD_OF_ENDER.get(), LordOfEnderRenderer::new);
+            EntityRenderers.register(ModEntities.ENDER_ENERGY_CRYSTAL.get(), EnderEnergyCrystalRenderer::new);
+            EntityRenderers.register(ModEntities.ENDER_SPEAR.get(), EnderSpearRenderer::new);
+            EntityRenderers.register(ModEntities.FIRE_EXPLOSION_BALL.get(), FireExplosionBallRenderer::new);
+            EntityRenderers.register(ModEntities.ICE_PRISM_CORE.get(), IcePrismCoreRenderer::new);
+            EntityRenderers.register(ModEntities.ICE_PRISM.get(), IcePrismRenderer::new);
+             EntityRenderers.register(ModEntities.ENDER_ORB.get(), EnderOrbRenderer::new);
             
             // 注册伤害数值指示器渲染器
             registerDamageIndicatorRenderer();

@@ -126,7 +126,7 @@ public class PolarizingPrism extends BaseWeapon
         if (!level.isClientSide()) {
             if (!isLaserActive || activeLaser == null || !activeLaser.isAlive()) {
                 // 计算激光伤害
-                float laserDamage = calculateLaserDamage(player, itemstack);
+                float laserDamage = calculateFinalDamage(player, itemstack, null);
 
                 // 创建激光投射物
                 activeLaser = new PolarizingPrismLaserProjectile(ModEntities.POLARIZING_PRISM_LASER_PROJECTILE.get(), level);
@@ -173,32 +173,7 @@ public class PolarizingPrism extends BaseWeapon
      * 计算激光伤害（使用BaseWeapon相同的计算方法）
      */
     public float calculateLaserDamage(Player player, ItemStack stack) {
-        // 使用BaseWeapon的伤害计算逻辑，但基于激光伤害
-        float baseDamage = LASER_DAMAGE_PER_TICK;
-
-        // 计算基础伤害加成（基于饰品）
-        float accessoryBaseBonus = calculateAccessoryBaseBonus(player);
-
-        // 计算其他伤害加成（饰品、药水等）
-        float otherBonus = calculateOtherBonus(player);
-
-        // 计算伤害浮动值
-        float fluctuation = calculateDamageFluctuation();
-
-        // 判断是否暴击
-        boolean isCritical = isCriticalHit(player);
-
-        float finalDamage;
-        if (isCritical) {
-            // 暴击伤害公式（与BaseWeapon保持一致）
-            float criticalBonus = getCriticalDamageMultiplier(player);
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.8f * criticalBonus * fluctuation;
-        } else {
-            // 普通伤害公式（与BaseWeapon保持一致）
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.9f * fluctuation;
-        }
-
-        return Math.max(0, finalDamage);
+        return calculateFinalDamage(player, stack, null);
     }
 
     /**

@@ -61,7 +61,7 @@ public class GhostlyGrimoire extends BaseWeapon
             public Ingredient getRepairIngredient() {
                 return null;
             }
-        }, new Properties(), 0, 1.0f, 1f, 0.12f, 0.15f, 0.4f, WeaponEnum.MAGIC);
+        }, new Properties(), (int)BASE_MAGIC_DAMAGE, 1.0f, 1f, 0.12f, 0.15f, 0.4f, WeaponEnum.MAGIC);
     }
 
     @Override
@@ -104,7 +104,7 @@ public class GhostlyGrimoire extends BaseWeapon
      */
     private void performGhostlyParticleAttack(Level level, Player player, ItemStack itemstack) {
         // 计算伤害
-        float ghostDamage = calculateGhostDamage(player, itemstack);
+        float ghostDamage = calculateFinalDamage(player, itemstack, null);
         
         // 获取玩家视线方向
         Vec3 lookVec = player.getLookAngle();
@@ -141,32 +141,7 @@ public class GhostlyGrimoire extends BaseWeapon
      * 计算幽灵伤害（使用BaseWeapon相同的计算方法）
      */
     public float calculateGhostDamage(Player player, ItemStack stack) {
-        // 使用BaseWeapon的伤害计算逻辑，但基于魔法伤害
-        float baseDamage = BASE_MAGIC_DAMAGE;
-
-        // 计算基础伤害加成（基于饰品）
-        float accessoryBaseBonus = calculateAccessoryBaseBonus(player);
-
-        // 计算其他伤害加成（饰品、药水等）
-        float otherBonus = calculateOtherBonus(player);
-
-        // 计算伤害浮动值
-        float fluctuation = calculateDamageFluctuation();
-
-        // 判断是否暴击
-        boolean isCritical = isCriticalHit(player);
-
-        float finalDamage;
-        if (isCritical) {
-            // 暴击伤害公式（与BaseWeapon保持一致）
-            float criticalBonus = getCriticalDamageMultiplier(player);
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.8f * criticalBonus * fluctuation;
-        } else {
-            // 普通伤害公式（与BaseWeapon保持一致）
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.9f * fluctuation;
-        }
-
-        return Math.max(0, finalDamage);
+        return calculateFinalDamage(player, stack, null);
     }
 
     /**

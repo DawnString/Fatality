@@ -65,7 +65,7 @@ public class AshesDeath extends BaseWeapon
             public Ingredient getRepairIngredient() {
                 return null;
             }
-        }, new Properties(), 0, 1.0f, 1f, 0.12f, 0.15f, 0.2f, WeaponEnum.MELEE);
+        }, new Properties(), (int)BASE_DAMAGE, 1.0f, 1f, 0.12f, 0.15f, 0.2f, WeaponEnum.MELEE);
         
         setStory("一把致命的投掷长矛，击中目标后会产生爆炸，对周围敌人造成伤害并粉碎他们的护甲。");
     }
@@ -130,21 +130,7 @@ public class AshesDeath extends BaseWeapon
      * 计算长矛伤害
      */
     public float calculateSpearDamage(Player player, ItemStack stack) {
-        float baseDamage = BASE_DAMAGE;
-        float accessoryBaseBonus = calculateAccessoryBaseBonus(player);
-        float otherBonus = calculateOtherBonus(player);
-        float fluctuation = calculateDamageFluctuation();
-        boolean isCritical = isCriticalHit(player);
-
-        float finalDamage;
-        if (isCritical) {
-            float criticalBonus = getCriticalDamageMultiplier(player);
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.8f * criticalBonus * fluctuation;
-        } else {
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.9f * fluctuation;
-        }
-
-        return Math.max(0, finalDamage);
+        return calculateFinalDamage(player, stack, null);
     }
 
     /**

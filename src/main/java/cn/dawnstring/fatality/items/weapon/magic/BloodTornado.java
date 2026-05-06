@@ -56,7 +56,7 @@ public class BloodTornado extends BaseWeapon
             public Ingredient getRepairIngredient() {
                 return null; // 不能修复
             }
-        }, new Properties(), 0, 0.5f, 1f, 0.22f, 0.28f, 0.3f, WeaponEnum.MAGIC);
+        }, new Properties(), (int)BASE_MAGIC_DAMAGE, 0.5f, 1f, 0.22f, 0.28f, 0.3f, WeaponEnum.MAGIC);
         
         setStory("血色龙卷是Tornado的升级版本，释放的龙卷风呈现血红色，具有更强的吸引力和伤害。");
     }
@@ -85,7 +85,9 @@ public class BloodTornado extends BaseWeapon
         }
         
         // 消耗魔法值
-        consumeMana(player);
+        if (!level.isClientSide()) {
+            consumeMana(player);
+        }
         
         // 设置冷却时间
         player.getCooldowns().addCooldown(this, ATTACK_COOLDOWN_TICKS);
@@ -121,7 +123,7 @@ public class BloodTornado extends BaseWeapon
      */
     private void performBloodTornadoAttack(Level level, Player player, ItemStack itemstack) {
         // 计算血色龙卷风伤害
-        float tornadoDamage = calculateBloodTornadoDamage(player, itemstack);
+        float tornadoDamage = calculateFinalDamage(player, itemstack, null);
         
         // 创建血色龙卷风投射物
         BloodTornadoProjectile tornado = new BloodTornadoProjectile(level, player, tornadoDamage);
@@ -138,31 +140,6 @@ public class BloodTornado extends BaseWeapon
      * 计算血色龙卷风伤害（使用BaseWeapon相同的计算方法）
      */
     public float calculateBloodTornadoDamage(Player player, ItemStack stack) {
-        // 使用BaseWeapon的伤害计算逻辑，但基于魔法伤害
-        float baseDamage = BASE_MAGIC_DAMAGE;
-
-        // 计算基础伤害加成（基于饰品）
-        float accessoryBaseBonus = calculateAccessoryBaseBonus(player);
-
-        // 计算其他伤害加成（饰品、药水等）
-        float otherBonus = calculateOtherBonus(player);
-
-        // 计算伤害浮动值
-        float fluctuation = calculateDamageFluctuation();
-
-        // 判断是否暴击
-        boolean isCritical = isCriticalHit(player);
-
-        float finalDamage;
-        if (isCritical) {
-            // 暴击伤害公式
-            float criticalBonus = getCriticalDamageMultiplier(player);
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.8f * criticalBonus * fluctuation;
-        } else {
-            // 普通伤害公式
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.9f * fluctuation;
-        }
-
-        return Math.max(0.1f, finalDamage); // 确保至少造成0.1点伤害
+        return calculateFinalDamage(player, stack, null);
     }
 }

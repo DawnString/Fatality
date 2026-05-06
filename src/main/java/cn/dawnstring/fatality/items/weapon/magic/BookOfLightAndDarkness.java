@@ -69,7 +69,7 @@ public class BookOfLightAndDarkness extends BaseWeapon
             public Ingredient getRepairIngredient() {
                 return null;
             }
-        }, new Properties(), 0, 1.0f, 1f, 0.15f, 15.0f, 0.4f, WeaponEnum.MAGIC);
+        }, new Properties(), (int)BASE_MAGIC_DAMAGE, 1.0f, 1f, 0.15f, 15.0f, 0.4f, WeaponEnum.MAGIC);
         
         this.setStory("光暗之书，神秘的魔法武器。右键召唤光暗双球，光球与暗球环绕玩家旋转并交替发射追踪粒子攻击敌人。球体存在10秒，消耗30点魔法值。");
     }
@@ -178,7 +178,7 @@ public class BookOfLightAndDarkness extends BaseWeapon
         
         if (target != null) {
             // 计算伤害
-            float damage = calculateSphereDamage(player);
+            float damage = calculateFinalDamage(player, null, null);
             
             // 发射追踪粒子
             shootTrackingParticle(level, sphere.getPosition(), target, damage, sphere.isLightSphere(), player);
@@ -221,41 +221,6 @@ public class BookOfLightAndDarkness extends BaseWeapon
         return nearest;
     }
 
-    /**
-     * 计算球体伤害
-     */
-    private float calculateSphereDamage(Player player) {
-        // 使用BaseWeapon的伤害计算逻辑
-        float baseDamage = BASE_MAGIC_DAMAGE;
-
-        // 计算基础伤害加成（基于饰品）
-        float accessoryBaseBonus = calculateAccessoryBaseBonus(player);
-
-        // 计算其他伤害加成（饰品、药水等）
-        float otherBonus = calculateOtherBonus(player);
-
-        // 计算伤害浮动值
-        float fluctuation = calculateDamageFluctuation();
-
-        // 判断是否暴击
-        boolean isCritical = isCriticalHit(player);
-
-        float finalDamage;
-        if (isCritical) {
-            // 暴击伤害公式（与BaseWeapon保持一致）
-            float criticalBonus = getCriticalDamageMultiplier(player);
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.8f * criticalBonus * fluctuation;
-        } else {
-            // 普通伤害公式（与BaseWeapon保持一致）
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.9f * fluctuation;
-        }
-
-        return Math.max(0, finalDamage);
-    }
-
-    /**
-     * 发射追踪粒子
-     */
     private void shootTrackingParticle(Level level, Vec3 startPos, LivingEntity target, float damage, boolean isLight, Player player) {
         if (!(level instanceof ServerLevel serverLevel)) return;
         

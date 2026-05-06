@@ -4,6 +4,7 @@ import cn.dawnstring.fatality.entity.projectile.StarProjectile;
 import cn.dawnstring.fatality.entity.projectile.TrackingStarProjectile;
 import cn.dawnstring.fatality.items.BaseWeapon;
 import cn.dawnstring.fatality.items.WeaponEnum;
+import cn.dawnstring.fatality.system.ManaSystem;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -33,10 +34,10 @@ public class StarryNight extends BaseWeapon
     
     // 弹幕概率配置
     private static final float NORMAL_STAR_PROBABILITY = 0.60f; // 60%普通星星
-    private static final float TRACKING_STAR_PROBABILITY = 0.40f; // 40%追踪星星
+    private static final float TRACKING_STAR_PROBABILITY = 0.40f;
+    private static final float MANA_COST = 5.0f;
     
-    // 弹幕速度配置
-    private static final float NORMAL_STAR_SPEED = 1.8f; // 普通星星速度
+    private static final float NORMAL_STAR_SPEED = 1.8f;
     private static final float TRACKING_STAR_SPEED = 1.2f; // 追踪星星速度
     
     public StarryNight() {
@@ -89,7 +90,14 @@ public class StarryNight extends BaseWeapon
         ItemStack itemstack = player.getItemInHand(hand);
         
         if (!level.isClientSide()) {
-            // 计算伤害（考虑饰品加成等）
+            if (!ManaSystem.safeConsumeMana(player, MANA_COST)) {
+                player.displayClientMessage(
+                        net.minecraft.network.chat.Component.literal("§c魔力不足！"),
+                        true
+                );
+                return InteractionResultHolder.fail(itemstack);
+            }
+
             float calculatedDamage = calculateSpellDamage(player, itemstack);
             
             // 查找最近的敌人作为追踪目标

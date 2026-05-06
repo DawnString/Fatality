@@ -106,20 +106,7 @@ public class Punishment extends BaseWeapon
          ItemStack itemstack = player.getItemInHand(hand);
          
          if (!level.isClientSide()) {
-             // 检查魔力是否足够
-             if (hasEnoughMana(player)) {
-                 // 消耗魔力
-                 consumeMana(player);
-                 
-                 // 符文锁链抽打
-                 whipWithRuneChains(player, level, itemstack);
-                 
-                 // 设置冷却时间
-                 player.getCooldowns().addCooldown(this, 5); // 0.25秒冷却
-                 
-                 return InteractionResultHolder.success(itemstack);
-             } else {
-                 // 魔力不足提示
+             if (!ManaSystem.safeConsumeMana(player, MANA_COST)) {
                  if (level.isClientSide()) {
                      player.displayClientMessage(
                              net.minecraft.network.chat.Component.literal("§c魔力不足！"),
@@ -128,6 +115,12 @@ public class Punishment extends BaseWeapon
                  }
                  return InteractionResultHolder.fail(itemstack);
              }
+             
+             whipWithRuneChains(player, level, itemstack);
+             
+             player.getCooldowns().addCooldown(this, 5);
+             
+             return InteractionResultHolder.success(itemstack);
          }
          
          return InteractionResultHolder.pass(itemstack);

@@ -17,12 +17,13 @@ import java.util.UUID;
 
 /**
  * 生命之心 - 右键使用增加最大生命值20点
- * 最大生命值上限：1000点（基础20点 + 饰品加成 + 物品加成）
+ * 生命之心加成上限：380点（基础20 + 380 = 400）
+ * 总生命值上限：1000点（基础20 + 生命之心380 + 其他物品580）
  */
 public class HeartOfLife extends NormalItem {
-    private static final float HEALTH_BONUS = 20.0f; // 每次增加20点生命值
-    private static final float MAX_BONUS_HEALTH = 400.0f; // 通过物品最多增加400点生命值
-    private static final float TOTAL_MAX_HEALTH = 400.0f; // 总生命值上限400点（基础20点 + 物品加成380点）
+    private static final float HEALTH_BONUS = 20.0f;
+    private static final float MAX_BONUS_HEALTH = 380.0f;
+    private static final float TOTAL_MAX_HEALTH = 1000.0f;
 
     // 存储玩家的属性修改器UUID（临时缓存）
     private static final Map<String, UUID> playerHealthModifierMap = new HashMap<>();
@@ -55,7 +56,6 @@ public class HeartOfLife extends NormalItem {
             // 计算总生命值（基础20点 + 物品加成）
             float totalHealth = baseMaxHealth + newBonus;
 
-            // 修复：确保总生命值不超过400点上限
             if (totalHealth > TOTAL_MAX_HEALTH) {
                 player.displayClientMessage(Component.literal("§c已达到最大生命值上限！无法继续使用生命之心。"), true);
                 return InteractionResultHolder.fail(itemstack);

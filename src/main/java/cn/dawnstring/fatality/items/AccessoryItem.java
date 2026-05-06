@@ -2,6 +2,8 @@ package cn.dawnstring.fatality.items;
 
 import cn.dawnstring.fatality.utils.TooltipHelper;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -719,6 +721,33 @@ public class AccessoryItem extends Item
                 attribute.removeModifier(uuid);
             }
         }
+    }
+
+    public static boolean hasAccessoryEquipped(Player player, Class<? extends AccessoryItem> type) {
+        var accessoryInventory = cn.dawnstring.fatality.inventory.AccessoryInventory.get(player);
+        if (accessoryInventory == null) return false;
+        for (int i = 0; i < accessoryInventory.getItemHandler().getSlots(); i++) {
+            if (type.isInstance(accessoryInventory.getItemHandler().getStackInSlot(i).getItem())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected void applyNegativeEffectImmunity(Player player) {
+        MobEffect[] negativeEffects = {
+                MobEffects.POISON, MobEffects.WITHER, MobEffects.MOVEMENT_SLOWDOWN,
+                MobEffects.DIG_SLOWDOWN, MobEffects.CONFUSION, MobEffects.HUNGER,
+                MobEffects.BLINDNESS, MobEffects.WEAKNESS, MobEffects.DARKNESS
+        };
+        for (MobEffect effect : negativeEffects) {
+            if (player.hasEffect(effect)) {
+                player.removeEffect(effect);
+            }
+        }
+    }
+
+    protected void removeNegativeEffectImmunity(Player player) {
     }
 
     /**

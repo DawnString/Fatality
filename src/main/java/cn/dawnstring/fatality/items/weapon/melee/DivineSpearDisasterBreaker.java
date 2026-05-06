@@ -137,29 +137,17 @@ public class DivineSpearDisasterBreaker extends BaseWeapon {
     /**
      * 计算神枪伤害
      */
-    public float calculateSpearDamage(Player player, ItemStack stack, int baseDamage)
-    {
-        // 使用BaseWeapon的伤害计算逻辑，但使用自定义的基础伤害和暴击属性
-
-        // 计算基础伤害加成（基于饰品）
+    public float calculateSpearDamage(Player player, ItemStack stack, int baseDamage) {
         float accessoryBaseBonus = calculateAccessoryBaseBonus(player);
-
-        // 计算其他伤害加成（饰品、药水等）
         float otherBonus = calculateOtherBonus(player);
-
-        // 计算伤害浮动值
         float fluctuation = calculateDamageFluctuation();
-
-        // 判断是否暴击
         boolean isCritical = isCriticalHit(player);
 
         float finalDamage;
         if (isCritical) {
-            // 暴击伤害公式（与BaseWeapon保持一致）
             float criticalBonus = getCriticalDamageMultiplier(player);
             finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.8f * criticalBonus * fluctuation;
         } else {
-            // 普通伤害公式（与BaseWeapon保持一致）
             finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.9f * fluctuation;
         }
 

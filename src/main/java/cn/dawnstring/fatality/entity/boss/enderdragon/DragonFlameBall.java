@@ -1,9 +1,9 @@
 package cn.dawnstring.fatality.entity.boss.enderdragon;
 
-import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -20,6 +20,11 @@ import java.util.List;
 
 public class DragonFlameBall extends Entity implements GeoEntity {
 
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.cache;
+    }
+
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     
     private LivingEntity owner;
@@ -28,6 +33,7 @@ public class DragonFlameBall extends Entity implements GeoEntity {
     private int lifetime;
     private int maxLifetime;
     private boolean isProtective;
+    private int immunityTicks = 10;
 
     public DragonFlameBall(EntityType<? extends DragonFlameBall> type, Level level) {
         super(type, level);
@@ -53,18 +59,9 @@ public class DragonFlameBall extends Entity implements GeoEntity {
     public void tick() {
         super.tick();
         
+        if (immunityTicks > 0) immunityTicks--;
+        
         if (this.level().isClientSide()) {
-            if (isProtective && owner != null && owner.isAlive()) {
-                double angle = (this.tickCount * 0.1) % (Math.PI * 2);
-                double radius = 3.0;
-                double yOffset = 2.0;
-                
-                double x = owner.getX() + Math.cos(angle) * radius;
-                double y = owner.getY() + yOffset + Math.sin(angle * 2) * 0.5;
-                double z = owner.getZ() + Math.sin(angle) * radius;
-                
-                this.setPos(x, y, z);
-            }
             return;
         }
         
@@ -102,29 +99,16 @@ public class DragonFlameBall extends Entity implements GeoEntity {
     }
 
     private void tickAttack() {
-        if (target == null || !target.isAlive()) {
+        Vec3 velocity = this.getDeltaMovement();
+        if (velocity.lengthSqr() < 0.001) {
             return;
         }
-        
-        Vec3 currentPos = this.position();
-        Vec3 targetPos = target.position();
-        
-        Vec3 direction = targetPos.subtract(currentPos).normalize();
-        double speed = 0.8;
-        
-        Vec3 velocity = direction.scale(speed);
-        this.setDeltaMovement(velocity);
-        
-        this.setPos(
-            this.getX() + velocity.x,
-            this.getY() + velocity.y,
-            this.getZ() + velocity.z
-        );
-        
-        this.lookAt(EntityAnchorArgument.Anchor.EYES, targetPos);
+        this.move(MoverType.SELF, velocity);
     }
 
     private void checkCollisions() {
+        if (immunityTicks > 0) return;
+        
         AABB boundingBox = this.getBoundingBox();
         
         if (!isProtective) {
@@ -198,49 +182,24 @@ public class DragonFlameBall extends Entity implements GeoEntity {
         }));
     }
 
-    @Override
-    public AnimatableInstanceCache getAnimatableInstanceCache() {
-        return cache;
-    }
-
-    public LivingEntity getOwner() {
-        return owner;
-    }
-
     public void setOwner(LivingEntity owner) {
         this.owner = owner;
-    }
-
-    public LivingEntity getTarget() {
-        return target;
     }
 
     public void setTarget(LivingEntity target) {
         this.target = target;
     }
 
-    public float getDamage() {
-        return damage;
-    }
-
     public void setDamage(float damage) {
         this.damage = damage;
     }
 
-    public boolean isProtective() {
-        return isProtective;
-    }
-
-    public void setProtective(boolean protective) {
-        isProtective = protective;
-    }
-
-    public int getLifetime() {
-        return lifetime;
+    public void setProtective(boolean isProtective) {
+        this.isProtective = isProtective;
     }
 
     public void setLifetime(int lifetime) {
-        this.lifetime = lifetime;
         this.maxLifetime = lifetime;
+        this.lifetime = 0;
     }
 }

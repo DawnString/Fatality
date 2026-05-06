@@ -56,7 +56,7 @@ public class Phoenix extends BaseWeapon
             public Ingredient getRepairIngredient() {
                 return null; // 不可修复
             }
-        }, new Properties(), 0, 0.25f, 1f, 0.24f, 0.30f, 0.2f, WeaponEnum.RANGED);
+        }, new Properties(), (int)BASE_RAY_DAMAGE, 0.25f, 1f, 0.24f, 0.30f, 0.2f, WeaponEnum.RANGED);
         
         // 设置武器故事
         this.setStory("传说中的凤凰武器，能够发射炽热的凤凰射线，每一发都蕴含着凤凰的火焰之力。");
@@ -108,31 +108,6 @@ public class Phoenix extends BaseWeapon
      * 计算射线伤害（使用BaseWeapon相同的计算方法）
      */
     public float calculateRayDamage(Player player, ItemStack stack) {
-        // 使用BaseWeapon的伤害计算逻辑，但基于射线伤害
-        float baseDamage = BASE_RAY_DAMAGE;
-
-        // 计算基础伤害加成（基于饰品）
-        float accessoryBaseBonus = calculateAccessoryBaseBonus(player);
-
-        // 计算其他伤害加成（饰品、药水等）
-        float otherBonus = calculateOtherBonus(player);
-
-        // 计算伤害浮动值
-        float fluctuation = calculateDamageFluctuation();
-
-        // 判断是否暴击
-        boolean isCritical = isCriticalHit(player);
-
-        float finalDamage;
-        if (isCritical) {
-            // 暴击伤害公式（与BaseWeapon保持一致）
-            float criticalBonus = getCriticalDamageMultiplier(player);
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.8f * criticalBonus * fluctuation;
-        } else {
-            // 普通伤害公式（与BaseWeapon保持一致）
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.9f * fluctuation;
-        }
-
-        return Math.max(0, finalDamage);
+        return calculateFinalDamage(player, stack, null);
     }
 }

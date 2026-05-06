@@ -1,5 +1,6 @@
 package cn.dawnstring.fatality.modules.combat;
 
+import cn.dawnstring.fatality.Fatality;
 import cn.dawnstring.fatality.api.attributes.IAttributeSystem;
 import cn.dawnstring.fatality.api.events.FatalityEvent;
 import cn.dawnstring.fatality.api.systems.IModSystem;
@@ -8,13 +9,15 @@ import cn.dawnstring.fatality.core.systems.SystemRegistry;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import org.apache.logging.log4j.Logger;
 
 /**
  * 战斗系统模块
  * 基于事件驱动的战斗计算系统
  */
 public class CombatSystem implements IModSystem {
-    
+
+    private static final Logger LOGGER = Fatality.LOGGER;
     private static final CombatSystem INSTANCE = new CombatSystem();
     
     private CombatSystem() {
@@ -33,7 +36,7 @@ public class CombatSystem implements IModSystem {
     
     @Override
     public void initialize() {
-        System.out.println("Combat System initialized");
+        LOGGER.info("Combat System initialized");
     }
     
     /**

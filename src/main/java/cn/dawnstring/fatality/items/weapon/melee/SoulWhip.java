@@ -64,7 +64,7 @@ public class SoulWhip extends BaseWeapon {
             public Ingredient getRepairIngredient() {
                 return Ingredient.of(net.minecraft.world.item.Items.SOUL_SAND); // 灵魂沙修复
             }
-        }, new Properties(), 0, 0.6f, 1f, 0.07f, 0.06f, 0.4f, WeaponEnum.MELEE);
+        }, new Properties(), (int)BASE_DAMAGE, 0.6f, 1f, 0.07f, 0.06f, 0.4f, WeaponEnum.MELEE);
     }
 
     /**
@@ -145,32 +145,7 @@ public class SoulWhip extends BaseWeapon {
      * 计算灵魂鞭伤害
      */
     private float calculateSoulWhipDamage(Player player) {
-        // 使用基础伤害计算
-        float baseDamage = BASE_DAMAGE;
-
-        // 计算基础伤害加成（基于饰品）
-        float accessoryBaseBonus = calculateAccessoryBaseBonus(player);
-
-        // 计算其他伤害加成（饰品、药水等）
-        float otherBonus = calculateOtherBonus(player);
-
-        // 计算伤害浮动值
-        float fluctuation = calculateDamageFluctuation();
-
-        // 判断是否暴击
-        boolean isCritical = isCriticalHit(player);
-
-        float finalDamage;
-        if (isCritical) {
-            // 暴击伤害公式
-            float criticalBonus = getCriticalDamageMultiplier(player);
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.85f * criticalBonus * fluctuation;
-        } else {
-            // 普通伤害公式
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.95f * fluctuation;
-        }
-
-        return Math.max(0, finalDamage);
+        return calculateFinalDamage(player, player.getMainHandItem(), null);
     }
 
     /**

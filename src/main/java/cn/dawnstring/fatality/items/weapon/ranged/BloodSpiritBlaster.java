@@ -167,49 +167,12 @@ public class BloodSpiritBlaster extends BaseWeapon
         return MIN_SPREAD_ANGLE + (float)(Math.random() * (MAX_SPREAD_ANGLE - MIN_SPREAD_ANGLE));
     }
 
-    /**
-     * 计算锥形散布方向
-     */
-    private Vec3 calculateConeSpreadDirection(Vec3 baseDirection, int pelletIndex, int totalPellets, float spreadAngle) {
-        double spreadRad = Math.toRadians(spreadAngle);
-        double angleStep = 2 * Math.PI / totalPellets;
-        double angle = pelletIndex * angleStep;
-        double radius = Math.random() * spreadRad;
-        
-        double horizontalOffset = radius * Math.cos(angle);
-        double verticalOffset = radius * Math.sin(angle);
-        
-        Vec3 up = new Vec3(0, 1, 0);
-        Vec3 right = baseDirection.cross(up).normalize();
-        Vec3 forward = baseDirection.normalize();
-        
-        Vec3 spreadVec = forward
-                .add(right.scale(horizontalOffset))
-                .add(up.scale(verticalOffset))
-                .normalize();
-        
-        return spreadVec;
+    protected Vec3 calculateConeSpreadDirection(Vec3 baseDirection, int pelletIndex, int totalPellets, float spreadAngle) {
+        return super.calculateConeSpreadDirection(baseDirection, pelletIndex, totalPellets, spreadAngle);
     }
 
-    /**
-     * 计算子弹伤害
-     */
     public float calculateBulletDamage(Player player, ItemStack stack) {
-        float baseDamage = BASE_BULLET_DAMAGE;
-        float accessoryBaseBonus = calculateAccessoryBaseBonus(player);
-        float otherBonus = calculateOtherBonus(player);
-        float fluctuation = calculateDamageFluctuation();
-        boolean isCritical = isCriticalHit(player);
-
-        float finalDamage;
-        if (isCritical) {
-            float criticalBonus = getCriticalDamageMultiplier(player);
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.8f * criticalBonus * fluctuation;
-        } else {
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.9f * fluctuation;
-        }
-
-        return Math.max(0, finalDamage);
+        return calculateFinalDamage(player, stack, null);
     }
 
     /**

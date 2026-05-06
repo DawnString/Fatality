@@ -24,12 +24,12 @@ import net.minecraft.world.phys.Vec3;
  */
 public class Blizzard extends BaseWeapon
 {
-    private static final float MANA_COST = 6.0f; // 每次施法消耗12点魔法值
-    private static final int COOLDOWN_TICKS = 20; // 冷却时间20tick（1秒）
-    private static final float BASE_MAGIC_DAMAGE = 78.0f; // 基础魔法伤害78
-    private static final double TARGET_RANGE = 25.0; // 检测目标的最大距离
-    private static final int ICICLE_COUNT = 12; // 冰锥数量
-    private static final double ICICLE_SPREAD = 3.0; // 冰锥散布范围
+    private static final float MANA_COST = 6.0f;
+    private static final int COOLDOWN_TICKS = 20;
+    private static final double TARGET_RANGE = 25.0;
+    private static final int ICICLE_COUNT = 12;
+    private static final double ICICLE_SPREAD = 3.0;
+    private static final float BASE_MAGIC_DAMAGE = 12.0f;
 
     public Blizzard() {
         super(new Tier() {
@@ -62,7 +62,7 @@ public class Blizzard extends BaseWeapon
             public Ingredient getRepairIngredient() {
                 return null;
             }
-        }, new Properties(), 0, 1.0f, 1f, 0.08f, 0.09f, 0.3f, WeaponEnum.MAGIC);
+        }, new Properties(), (int)BASE_MAGIC_DAMAGE, 1.0f, 1f, 0.08f, 0.09f, 0.3f, WeaponEnum.MAGIC);
     }
 
     @Override
@@ -83,7 +83,7 @@ public class Blizzard extends BaseWeapon
 
         if (target != null) {
             // 计算冰锥伤害
-            float icicleDamage = calculateIcicleDamage(player, itemstack);
+            float icicleDamage = calculateFinalDamage(player, itemstack, null);
 
             // 在目标上方召唤大量冰锥（在服务器端创建实体）
             if (!level.isClientSide()) {
@@ -179,37 +179,5 @@ public class Blizzard extends BaseWeapon
         // 播放冰锥召唤音效
         level.playSound(null, targetPos.x, targetPos.y, targetPos.z,
                 SoundEvents.GLASS_BREAK, SoundSource.HOSTILE, 0.8F, 1.5F);
-    }
-
-    /**
-     * 计算冰锥伤害（使用BaseWeapon相同的计算方法）
-     */
-    public float calculateIcicleDamage(Player player, ItemStack stack) {
-        // 使用BaseWeapon的伤害计算逻辑，但基于魔法伤害
-        float baseDamage = BASE_MAGIC_DAMAGE;
-
-        // 计算基础伤害加成（基于饰品）
-        float accessoryBaseBonus = calculateAccessoryBaseBonus(player);
-
-        // 计算其他伤害加成（饰品、药水等）
-        float otherBonus = calculateOtherBonus(player);
-
-        // 计算伤害浮动值
-        float fluctuation = calculateDamageFluctuation();
-
-        // 判断是否暴击
-        boolean isCritical = isCriticalHit(player);
-
-        float finalDamage;
-        if (isCritical) {
-            // 暴击伤害公式（与BaseWeapon保持一致）
-            float criticalBonus = getCriticalDamageMultiplier(player);
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.8f * criticalBonus * fluctuation;
-        } else {
-            // 普通伤害公式（与BaseWeapon保持一致）
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.9f * fluctuation;
-        }
-
-        return Math.max(1.0f, finalDamage); // 确保最小伤害为1
     }
 }

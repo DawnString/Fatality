@@ -4,6 +4,7 @@ import cn.dawnstring.fatality.entity.projectile.DragonFlameCurseFireProjectile;
 import cn.dawnstring.fatality.items.BaseWeapon;
 import cn.dawnstring.fatality.items.WeaponEnum;
 import cn.dawnstring.fatality.registry.ModEffects;
+import cn.dawnstring.fatality.system.ManaSystem;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -22,7 +23,8 @@ import net.minecraft.world.level.Level;
  */
 public class DragonFlameCurseFire extends BaseWeapon {
     
-    private static final int COOLDOWN_TICKS = 20; // 冷却时间1秒
+    private static final int COOLDOWN_TICKS = 20;
+    private static final float MANA_COST = 6.0f;
     
     public DragonFlameCurseFire() {
         super(new Tier() {
@@ -67,7 +69,14 @@ public class DragonFlameCurseFire extends BaseWeapon {
         ItemStack itemstack = player.getItemInHand(hand);
         
         if (!level.isClientSide()) {
-            // 计算咒火伤害
+            if (!ManaSystem.safeConsumeMana(player, MANA_COST)) {
+                player.displayClientMessage(
+                        net.minecraft.network.chat.Component.literal("§c魔力不足！"),
+                        true
+                );
+                return InteractionResultHolder.fail(itemstack);
+            }
+
             float curseFireDamage = calculateCurseFireDamage(player, itemstack);
             
             // 生成龙炎诅咒火焰投射物

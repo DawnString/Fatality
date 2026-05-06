@@ -133,27 +133,26 @@ public class Unfortunate extends BaseWeapon {
      * 计算子弹散布方向
      */
     private Vec3 calculateBulletSpreadDirection(Vec3 baseDirection, int bulletIndex, int totalBullets) {
-        // 基础方向
         Vec3 direction = baseDirection.normalize();
-        
-        // 计算散布角度（12度锥形）
+
         double spreadAngle = Math.toRadians(12);
-        
-        // 计算每个子弹的偏移角度
+
         double angleStep = spreadAngle / (totalBullets - 1);
         double angleOffset = (bulletIndex - (totalBullets - 1) / 2.0) * angleStep;
-        
-        // 计算旋转后的方向
-        Vec3 up = new Vec3(0, 1, 0);
-        Vec3 right = direction.cross(up).normalize();
-        
-        // 绕右向量旋转
+
+        Vec3 right;
+        if (Math.abs(direction.y) > 0.99) {
+            right = direction.cross(new Vec3(0, 0, 1)).normalize();
+        } else {
+            right = direction.cross(new Vec3(0, 1, 0)).normalize();
+        }
+
         double cosAngle = Math.cos(angleOffset);
         double sinAngle = Math.sin(angleOffset);
-        
+
         Vec3 rotatedDirection = direction.scale(cosAngle)
                 .add(right.scale(sinAngle));
-        
+
         return rotatedDirection.normalize();
     }
     

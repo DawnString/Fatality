@@ -38,7 +38,7 @@ public class FragrantScarf extends AccessoryItem
     /**
      * 应用负面效果免疫
      */
-    private void applyNegativeEffectImmunity(Player player) {
+    public void applyNegativeEffectImmunity(Player player) {
         // 免疫中毒效果
         if (player.hasEffect(MobEffects.POISON)) {
             player.removeEffect(MobEffects.POISON);
@@ -58,7 +58,7 @@ public class FragrantScarf extends AccessoryItem
     /**
      * 移除负面效果免疫（主要是清理工作）
      */
-    private void removeNegativeEffectImmunity(Player player)
+    public void removeNegativeEffectImmunity(Player player)
     {
     }
 }

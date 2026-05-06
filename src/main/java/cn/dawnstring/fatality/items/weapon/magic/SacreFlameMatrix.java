@@ -69,7 +69,7 @@ public class SacreFlameMatrix extends BaseWeapon
             public Ingredient getRepairIngredient() {
                 return null; // 不可修复
             }
-        }, new Properties().stacksTo(1), 0, 0.05f, 1.0f, 0.24f, 30.0f, 0.4f, WeaponEnum.MAGIC);
+        }, new Properties().stacksTo(1), (int)BASE_MAGIC_DAMAGE, 0.05f, 1.0f, 0.24f, 30.0f, 0.4f, WeaponEnum.MAGIC);
         
         setStory("圣炎矩阵，蕴含着神圣火焰力量的魔法武器。\n" +
                 "长按右键释放圣炎矩阵，以玩家为中心形成正20面体边框，\n" +
@@ -81,16 +81,7 @@ public class SacreFlameMatrix extends BaseWeapon
         ItemStack itemstack = player.getItemInHand(hand);
 
         if (!level.isClientSide()) {
-            // 检查魔法值是否足够（需要至少消耗值的2倍才能开始释放）
-            if (ManaSystem.getCurrentMana(player) < MANA_COST_PER_SECOND * 2) {
-                // 魔法值不足消耗值的2倍，无法开始释放
-                player.displayClientMessage(Component.literal("§c魔法值不足！需要至少" + (MANA_COST_PER_SECOND * 2) + "点魔法值才能释放圣炎矩阵"), true);
-                return InteractionResultHolder.fail(itemstack);
-            }
-
-            // 检查魔法值是否足够
-            if (!ManaSystem.hasEnoughMana(player, MANA_COST_PER_SECOND)) {
-                // 魔法值不足，无法开始释放
+            if (!ManaSystem.safeConsumeMana(player, MANA_COST_PER_SECOND)) {
                 player.displayClientMessage(Component.literal("§c魔法值不足！需要" + MANA_COST_PER_SECOND + "点魔法值/秒"), true);
                 return InteractionResultHolder.fail(itemstack);
             }
@@ -106,9 +97,6 @@ public class SacreFlameMatrix extends BaseWeapon
                     SoundEvents.FIRE_AMBIENT, SoundSource.PLAYERS, 1.0f, 0.8f);
             level.playSound(null, player.getX(), player.getY(), player.getZ(),
                     SoundEvents.BEACON_ACTIVATE, SoundSource.PLAYERS, 0.8f, 1.2f);
-
-            // 魔法释放成功后才消耗魔法值（第一次消耗）
-            ManaSystem.consumeMana(player, MANA_COST_PER_SECOND);
         }
 
         return InteractionResultHolder.success(itemstack);
@@ -135,24 +123,11 @@ public class SacreFlameMatrix extends BaseWeapon
                 if (currentTime - lastManaConsumeTime >= 1000) {
                     lastManaConsumeTime = currentTime;
 
-                    // 检查魔法值是否小于消耗值的2倍（持续释放失败条件）
-                    if (ManaSystem.getCurrentMana(player) < MANA_COST_PER_SECOND * 2) {
-                        // 魔法值不足消耗值的2倍，停止矩阵
-                        stopMatrix(player);
-                        player.displayClientMessage(Component.literal("§c魔法值不足！需要至少" + (MANA_COST_PER_SECOND * 2) + "点魔法值才能持续释放"), true);
-                        return;
-                    }
-
-                    // 检查魔法值是否足够
-                    if (!ManaSystem.hasEnoughMana(player, MANA_COST_PER_SECOND)) {
-                        // 魔法值不足，停止矩阵
+                    if (!ManaSystem.safeConsumeMana(player, MANA_COST_PER_SECOND)) {
                         stopMatrix(player);
                         player.displayClientMessage(Component.literal("§c魔法值不足！圣炎矩阵已停止"), true);
                         return;
                     }
-
-                    // 魔法值足够，消耗魔法值
-                    ManaSystem.consumeMana(player, MANA_COST_PER_SECOND);
                 }
 
                 // 处理矩阵伤害和粒子效果
@@ -291,7 +266,7 @@ public class SacreFlameMatrix extends BaseWeapon
         for (LivingEntity entity : entitiesInRange) {
             if (entity != player && entity.isAlive()) {
                 // 计算伤害（使用BaseWeapon的伤害计算逻辑）
-                float damage = calculateMatrixDamage(player);
+                float damage = calculateFinalDamage(player, null, null);
                 
                 // 应用伤害
                 entity.hurt(entity.damageSources().playerAttack(player), damage);
@@ -306,38 +281,6 @@ public class SacreFlameMatrix extends BaseWeapon
 
     /**
      * 计算圣炎矩阵伤害
-     */
-    private float calculateMatrixDamage(Player player) {
-        // 使用BaseWeapon的伤害计算逻辑，但基于魔法伤害
-        float baseDamage = BASE_MAGIC_DAMAGE;
-
-        // 计算基础伤害加成（基于饰品）
-        float accessoryBaseBonus = calculateAccessoryBaseBonus(player);
-
-        // 计算其他伤害加成（饰品、药水等）
-        float otherBonus = calculateOtherBonus(player);
-
-        // 计算伤害浮动值
-        float fluctuation = calculateDamageFluctuation();
-
-        // 判断是否暴击
-        boolean isCritical = isCriticalHit(player);
-
-        float finalDamage;
-        if (isCritical) {
-            // 暴击伤害公式
-            float criticalBonus = getCriticalDamageMultiplier(player);
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.8f * criticalBonus * fluctuation;
-        } else {
-            // 普通伤害公式
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.9f * fluctuation;
-        }
-
-        return Math.max(0, finalDamage);
-    }
-
-    /**
-     * 生成击中粒子效果
      */
     private void spawnHitParticles(Level level, LivingEntity target) {
         // 在目标位置生成火焰粒子效果

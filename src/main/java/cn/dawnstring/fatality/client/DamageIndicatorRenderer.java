@@ -1,5 +1,6 @@
 package cn.dawnstring.fatality.client;
 
+import cn.dawnstring.fatality.Fatality;
 import cn.dawnstring.fatality.client.DamageIndicatorManager.DamageIndicator;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
@@ -15,6 +16,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import org.apache.logging.log4j.Logger;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -26,6 +28,7 @@ import java.util.List;
 @OnlyIn(Dist.CLIENT)
 public class DamageIndicatorRenderer {
 
+    private static final Logger LOGGER = Fatality.LOGGER;
     private static final Minecraft minecraft = Minecraft.getInstance();
 
     @SubscribeEvent
@@ -52,7 +55,7 @@ public class DamageIndicatorRenderer {
         List<DamageIndicator> activeIndicators = DamageIndicatorManager.getActiveIndicators();
 
         if (!activeIndicators.isEmpty()) {
-            System.out.println("DamageIndicatorRenderer: 开始渲染 " + activeIndicators.size() + " 个指示器");
+            LOGGER.debug("DamageIndicatorRenderer: 开始渲染 {} 个指示器", activeIndicators.size());
 
             for (DamageIndicator indicator : activeIndicators) {
                 renderDamageIndicator3D(poseStack, bufferSource, camera, indicator);

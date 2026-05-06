@@ -57,25 +57,14 @@ public class FireStaff extends BaseWeapon
             public Ingredient getRepairIngredient() {
                 return null;
             }
-        }, new Properties(), 0, 0.6f, 1, 0.05f, 0.06f, 0.3f, WeaponEnum.MAGIC);
+        }, new Properties(), (int)BASE_MAGIC_DAMAGE, 0.6f, 1, 0.05f, 0.06f, 0.3f, WeaponEnum.MAGIC);
     }
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack itemstack = player.getItemInHand(hand);
 
-        // 检查魔法值是否小于消耗值的2倍（释放失败条件）
-        if (ManaSystem.getCurrentMana(player) < MANA_COST * 2) {
-            // 如果魔法值不足消耗值的2倍，释放失败
-            if (level.isClientSide()) {
-                player.displayClientMessage(net.minecraft.network.chat.Component.literal("§c魔法值不足！需要至少" + (MANA_COST * 2) + "点魔法值才能释放"), true);
-            }
-            return InteractionResultHolder.fail(itemstack);
-        }
-
-        // 检查玩家是否有足够的魔法值
-        if (!ManaSystem.hasEnoughMana(player, MANA_COST)) {
-            // 如果魔法值不足，提示玩家
+        if (!ManaSystem.safeConsumeMana(player, MANA_COST)) {
             if (level.isClientSide()) {
                 player.displayClientMessage(net.minecraft.network.chat.Component.literal("§c魔法值不足！需要" + MANA_COST + "点魔法值"), true);
             }
@@ -92,7 +81,7 @@ public class FireStaff extends BaseWeapon
             }
 
             // 计算龙卷风伤害
-            float tornadoDamage = calculateTornadoDamage(player, itemstack);
+            float tornadoDamage = calculateFinalDamage(player, itemstack, null);
 
             // 创建龙卷风效果（在服务器端创建实体）
             if (!level.isClientSide()) {
@@ -108,9 +97,6 @@ public class FireStaff extends BaseWeapon
 
                 // 显示目标信息
                 player.displayClientMessage(net.minecraft.network.chat.Component.literal("§6对 " + target.getName().getString() + " 施放了龙卷风！"), true);
-
-                // 魔法释放成功后才消耗魔法值
-                ManaSystem.consumeMana(player, MANA_COST);
             } else {
                 // 在客户端也播放音效和显示信息
                 level.playSound(null, player.getX(), player.getY(), player.getZ(),
@@ -181,32 +167,4 @@ public class FireStaff extends BaseWeapon
         return dotProduct > 0.0; // 只要在玩家前方就认为是可见的
     }
 
-    public float calculateTornadoDamage(Player player, ItemStack stack) {
-        // 使用BaseWeapon的伤害计算逻辑，但基于魔法伤害
-        float baseDamage = BASE_MAGIC_DAMAGE;
-
-        // 计算基础伤害加成（基于饰品）
-        float accessoryBaseBonus = calculateAccessoryBaseBonus(player);
-
-        // 计算其他伤害加成（饰品、药水等）
-        float otherBonus = calculateOtherBonus(player);
-
-        // 计算伤害浮动值
-        float fluctuation = calculateDamageFluctuation();
-
-        // 判断是否暴击
-        boolean isCritical = isCriticalHit(player);
-
-        float finalDamage;
-        if (isCritical) {
-            // 暴击伤害公式（与BaseWeapon保持一致）
-            float criticalBonus = getCriticalDamageMultiplier(player);
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.8f * criticalBonus * fluctuation;
-        } else {
-            // 普通伤害公式（与BaseWeapon保持一致）
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.9f * fluctuation;
-        }
-
-        return Math.max(1.0f, finalDamage); // 确保最小伤害为1
-    }
 }

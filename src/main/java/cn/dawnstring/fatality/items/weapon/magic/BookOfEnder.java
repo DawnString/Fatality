@@ -60,7 +60,7 @@ public class BookOfEnder extends BaseWeapon
             public Ingredient getRepairIngredient() {
                 return null;
             }
-        }, new Properties(), 0, 1, 1, 0.05f, 1.0f, 0.3f, WeaponEnum.MAGIC);
+        }, new Properties(), (int)BASE_MAGIC_DAMAGE, 1, 1, 0.05f, 1.0f, 0.3f, WeaponEnum.MAGIC);
         
         this.setStory("末影之书，神秘的魔法武器。右键生成黑色球体，球体会自动发射黑色闪电攻击周围的敌对实体。球体存在10秒，最多可同时存在5个。");
     }
@@ -89,7 +89,7 @@ public class BookOfEnder extends BaseWeapon
             }
 
             // 计算闪电伤害
-            float lightningDamage = calculateLightningDamage(player, itemstack);
+            float lightningDamage = calculateFinalDamage(player, itemstack, null);
 
             // 获取玩家视线方向
             Vec3 lookVec = player.getLookAngle();
@@ -114,41 +114,6 @@ public class BookOfEnder extends BaseWeapon
         return InteractionResultHolder.success(itemstack);
     }
 
-    /**
-     * 计算闪电伤害（使用BaseWeapon相同的计算方法）
-     */
-    public float calculateLightningDamage(Player player, ItemStack stack) {
-        // 使用BaseWeapon的伤害计算逻辑，但基于魔法伤害
-        float baseDamage = BASE_MAGIC_DAMAGE;
-
-        // 计算基础伤害加成（基于饰品）
-        float accessoryBaseBonus = calculateAccessoryBaseBonus(player);
-
-        // 计算其他伤害加成（饰品、药水等）
-        float otherBonus = calculateOtherBonus(player);
-
-        // 计算伤害浮动值
-        float fluctuation = calculateDamageFluctuation();
-
-        // 判断是否暴击
-        boolean isCritical = isCriticalHit(player);
-
-        float finalDamage;
-        if (isCritical) {
-            // 暴击伤害公式（与BaseWeapon保持一致）
-            float criticalBonus = getCriticalDamageMultiplier(player);
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.8f * criticalBonus * fluctuation;
-        } else {
-            // 普通伤害公式（与BaseWeapon保持一致）
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.9f * fluctuation;
-        }
-
-        return Math.max(0, finalDamage);
-    }
-
-    /**
-     * 清理已消失的球体
-     */
     private void cleanupSpheres() {
         activeSpheres.removeIf(sphere -> sphere == null || sphere.isRemoved());
     }

@@ -62,7 +62,7 @@ public class IncompleteHolySpellBook extends BaseWeapon
             public Ingredient getRepairIngredient() {
                 return null;
             }
-        }, new Properties(), 0, 1.0f, 1f, 0.14f, 0.15f, 0.2f, WeaponEnum.MAGIC);
+        }, new Properties(), (int)BASE_MAGIC_DAMAGE, 1.0f, 1f, 0.14f, 0.15f, 0.2f, WeaponEnum.MAGIC);
         
         // 设置物品故事
         setStory("一本散发着神圣光芒的法术书，但似乎并不完整。\n" +
@@ -76,16 +76,7 @@ public class IncompleteHolySpellBook extends BaseWeapon
         ItemStack itemstack = player.getItemInHand(hand);
 
         if (!level.isClientSide()) {
-            // 检查魔法值是否小于消耗值的2倍（释放失败条件）
-            if (ManaSystem.getCurrentMana(player) < MANA_COST_PER_SECOND * 2) {
-                // 如果魔法值不足消耗值的2倍，释放失败
-                player.displayClientMessage(Component.literal("§c魔法值不足！需要至少" + (MANA_COST_PER_SECOND * 2) + "点魔法值才能释放"), true);
-                return InteractionResultHolder.fail(itemstack);
-            }
-
-            // 检查玩家是否有足够的魔法值（至少1秒的消耗）
-            if (!ManaSystem.hasEnoughMana(player, MANA_COST_PER_SECOND)) {
-                // 如果魔法值不足，提示玩家
+            if (!ManaSystem.safeConsumeMana(player, MANA_COST_PER_SECOND)) {
                 player.displayClientMessage(Component.literal("§c魔法值不足！需要" + MANA_COST_PER_SECOND + "点魔法值/秒"), true);
                 return InteractionResultHolder.fail(itemstack);
             }
@@ -95,7 +86,7 @@ public class IncompleteHolySpellBook extends BaseWeapon
             useDuration = 0; // 重置使用时间
 
             // 计算神圣光束伤害
-            float holyDamage = calculateHolyDamage(player, itemstack);
+            float holyDamage = calculateFinalDamage(player, itemstack, null);
 
             // 如果光束不存在，创建新的光束
             if (activeBeam == null || activeBeam.isRemoved()) {
@@ -107,9 +98,6 @@ public class IncompleteHolySpellBook extends BaseWeapon
                         SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 1.0f, 1.0f);
                 level.playSound(null, player.getX(), player.getY(), player.getZ(),
                         SoundEvents.BEACON_AMBIENT, SoundSource.PLAYERS, 0.8f, 1.0f);
-
-                // 魔法释放成功后才消耗魔法值（第一次消耗）
-                ManaSystem.consumeMana(player, MANA_COST_PER_SECOND);
             } else {
                 // 更新现有光束的伤害和散射程度
                 activeBeam.updateDamage(holyDamage);
@@ -153,19 +141,7 @@ public class IncompleteHolySpellBook extends BaseWeapon
                 if (currentTime - lastManaConsumeTime >= 1000) {
                     lastManaConsumeTime = currentTime;
 
-                    // 检查魔法值是否小于消耗值的2倍（持续释放失败条件）
-                    if (ManaSystem.getCurrentMana(player) < MANA_COST_PER_SECOND * 2) {
-                        // 魔法值不足消耗值的2倍，停止使用物品
-                        player.stopUsingItem();
-                        stopBeam();
-                        useDuration = 0;
-                        player.displayClientMessage(Component.literal("§c魔法值不足！需要至少" + (MANA_COST_PER_SECOND * 2) + "点魔法值才能持续释放"), true);
-                        return;
-                    }
-
-                    // 检查魔法值是否足够
-                    if (!ManaSystem.hasEnoughMana(player, MANA_COST_PER_SECOND)) {
-                        // 魔法值不足，停止使用物品
+                    if (!ManaSystem.safeConsumeMana(player, MANA_COST_PER_SECOND)) {
                         player.stopUsingItem();
                         stopBeam();
                         useDuration = 0;
@@ -173,12 +149,9 @@ public class IncompleteHolySpellBook extends BaseWeapon
                         return;
                     }
 
-                    // 魔法值足够，消耗魔法值并更新伤害和散射
-                    ManaSystem.consumeMana(player, MANA_COST_PER_SECOND);
-
                     // 更新伤害和散射程度
                     if (activeBeam != null && !activeBeam.isRemoved()) {
-                        float holyDamage = calculateHolyDamage(player, stack);
+                        float holyDamage = calculateFinalDamage(player, stack, null);
                         activeBeam.updateDamage(holyDamage);
                         activeBeam.updateScatter(useDuration);
                     }
@@ -199,40 +172,5 @@ public class IncompleteHolySpellBook extends BaseWeapon
             activeBeam.discard();
             activeBeam = null;
         }
-    }
-
-    /**
-     * 计算神圣光束伤害（使用BaseWeapon相同的计算方法）
-     */
-    public float calculateHolyDamage(Player player, ItemStack stack) {
-        // 使用BaseWeapon的伤害计算逻辑，但基于魔法伤害
-        float baseDamage = BASE_MAGIC_DAMAGE;
-
-        // 计算基础伤害加成（基于饰品）
-        float accessoryBaseBonus = calculateAccessoryBaseBonus(player);
-
-        // 计算其他伤害加成（饰品、药水等）
-        float otherBonus = calculateOtherBonus(player);
-
-        // 计算伤害浮动值
-        float fluctuation = calculateDamageFluctuation();
-
-        // 判断是否暴击
-        boolean isCritical = isCriticalHit(player);
-
-        float finalDamage;
-        if (isCritical) {
-            // 暴击伤害公式（与BaseWeapon保持一致）
-            float criticalBonus = getCriticalDamageMultiplier(player);
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.8f * criticalBonus * fluctuation;
-            
-            // 暴击时显示特效消息
-            player.displayClientMessage(Component.literal("§6神圣光束暴击！"), true);
-        } else {
-            // 普通伤害公式（与BaseWeapon保持一致）
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.9f * fluctuation;
-        }
-
-        return Math.max(0, finalDamage);
     }
 }

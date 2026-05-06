@@ -60,7 +60,7 @@ public class BookOfSacredLight extends BaseWeapon
             public Ingredient getRepairIngredient() {
                 return null;
             }
-        }, new Properties(), 0, 1.0f, 1f, 0.14f, 0.15f, 0.2f, WeaponEnum.MAGIC);
+        }, new Properties(), (int)BASE_MAGIC_DAMAGE, 1.0f, 1f, 0.14f, 0.15f, 0.2f, WeaponEnum.MAGIC);
     }
 
     @Override
@@ -68,16 +68,7 @@ public class BookOfSacredLight extends BaseWeapon
         ItemStack itemstack = player.getItemInHand(hand);
 
         if (!level.isClientSide()) {
-            // 检查魔法值是否小于消耗值的2倍（释放失败条件）
-            if (ManaSystem.getCurrentMana(player) < MANA_COST_PER_SECOND * 2) {
-                // 如果魔法值不足消耗值的2倍，释放失败
-                player.displayClientMessage(net.minecraft.network.chat.Component.literal("§c魔法值不足！需要至少" + (MANA_COST_PER_SECOND * 2) + "点魔法值才能释放"), true);
-                return InteractionResultHolder.fail(itemstack);
-            }
-
-            // 检查玩家是否有足够的魔法值（至少1秒的消耗）
-            if (!ManaSystem.hasEnoughMana(player, MANA_COST_PER_SECOND)) {
-                // 如果魔法值不足，提示玩家
+            if (!ManaSystem.safeConsumeMana(player, MANA_COST_PER_SECOND)) {
                 player.displayClientMessage(net.minecraft.network.chat.Component.literal("§c魔法值不足！需要" + MANA_COST_PER_SECOND + "点魔法值/秒"), true);
                 return InteractionResultHolder.fail(itemstack);
             }
@@ -86,7 +77,7 @@ public class BookOfSacredLight extends BaseWeapon
             player.startUsingItem(hand);
 
             // 计算神圣光芒伤害
-            float sacredDamage = calculateSacredDamage(player, itemstack);
+            float sacredDamage = calculateFinalDamage(player, itemstack, null);
 
             // 如果光束不存在，创建新的光束
             if (activeBeam == null || activeBeam.isRemoved()) {
@@ -98,9 +89,6 @@ public class BookOfSacredLight extends BaseWeapon
                         SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 1.0f, 1.2f);
                 level.playSound(null, player.getX(), player.getY(), player.getZ(),
                         SoundEvents.BEACON_ACTIVATE, SoundSource.PLAYERS, 0.6f, 0.8f);
-
-                // 魔法释放成功后才消耗魔法值（第一次消耗）
-                ManaSystem.consumeMana(player, MANA_COST_PER_SECOND);
             } else {
                 // 更新现有光束的伤害
                 activeBeam.updateDamage(sacredDamage);
@@ -140,30 +128,16 @@ public class BookOfSacredLight extends BaseWeapon
                 if (currentTime - lastManaConsumeTime >= 1000) {
                     lastManaConsumeTime = currentTime;
 
-                    // 检查魔法值是否小于消耗值的2倍（持续释放失败条件）
-                    if (ManaSystem.getCurrentMana(player) < MANA_COST_PER_SECOND * 2) {
-                        // 魔法值不足消耗值的2倍，停止使用物品
-                        player.stopUsingItem();
-                        stopBeam();
-                        player.displayClientMessage(net.minecraft.network.chat.Component.literal("§c魔法值不足！需要至少" + (MANA_COST_PER_SECOND * 2) + "点魔法值才能持续释放"), true);
-                        return;
-                    }
-
-                    // 检查魔法值是否足够
-                    if (!ManaSystem.hasEnoughMana(player, MANA_COST_PER_SECOND)) {
-                        // 魔法值不足，停止使用物品
+                    if (!ManaSystem.safeConsumeMana(player, MANA_COST_PER_SECOND)) {
                         player.stopUsingItem();
                         stopBeam();
                         player.displayClientMessage(net.minecraft.network.chat.Component.literal("§c魔法值不足！光束已停止"), true);
                         return;
                     }
 
-                    // 魔法值足够，消耗魔法值并更新伤害
-                    ManaSystem.consumeMana(player, MANA_COST_PER_SECOND);
-
                     // 更新伤害
                     if (activeBeam != null && !activeBeam.isRemoved()) {
-                        float sacredDamage = calculateSacredDamage(player, stack);
+                        float sacredDamage = calculateFinalDamage(player, stack, null);
                         activeBeam.updateDamage(sacredDamage);
                     }
                 }
@@ -182,37 +156,5 @@ public class BookOfSacredLight extends BaseWeapon
             activeBeam.discard();
             activeBeam = null;
         }
-    }
-
-    /**
-     * 计算神圣光芒伤害（使用BaseWeapon相同的计算方法）
-     */
-    public float calculateSacredDamage(Player player, ItemStack stack) {
-        // 使用BaseWeapon的伤害计算逻辑，但基于魔法伤害
-        float baseDamage = BASE_MAGIC_DAMAGE;
-
-        // 计算基础伤害加成（基于饰品）
-        float accessoryBaseBonus = calculateAccessoryBaseBonus(player);
-
-        // 计算其他伤害加成（饰品、药水等）
-        float otherBonus = calculateOtherBonus(player);
-
-        // 计算伤害浮动值
-        float fluctuation = calculateDamageFluctuation();
-
-        // 判断是否暴击
-        boolean isCritical = isCriticalHit(player);
-
-        float finalDamage;
-        if (isCritical) {
-            // 暴击伤害公式（与BaseWeapon保持一致）
-            float criticalBonus = getCriticalDamageMultiplier(player);
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.8f * criticalBonus * fluctuation;
-        } else {
-            // 普通伤害公式（与BaseWeapon保持一致）
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.9f * fluctuation;
-        }
-
-        return Math.max(0, finalDamage);
     }
 }

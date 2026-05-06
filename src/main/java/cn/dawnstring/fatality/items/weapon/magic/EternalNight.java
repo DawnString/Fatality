@@ -3,6 +3,7 @@ package cn.dawnstring.fatality.items.weapon.magic;
 import cn.dawnstring.fatality.entity.projectile.EternalNightProjectile;
 import cn.dawnstring.fatality.items.BaseWeapon;
 import cn.dawnstring.fatality.items.WeaponEnum;
+import cn.dawnstring.fatality.system.ManaSystem;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -21,9 +22,10 @@ import net.minecraft.world.phys.Vec3;
  */
 public class EternalNight extends BaseWeapon
 {
-    private static final int COOLDOWN_TICKS = 5; // 冷却时间5tick（0.25秒）
-    private static final float BASE_SPELL_DAMAGE = 225.0f; // 基础法术伤害225
-    private static final int FOG_DELAY_TICKS = 20; // 黑雾延迟时间（1秒，20ticks）
+    private static final int COOLDOWN_TICKS = 5;
+    private static final float BASE_SPELL_DAMAGE = 225.0f;
+    private static final float MANA_COST = 5.0f;
+    private static final int FOG_DELAY_TICKS = 20;
 
     public EternalNight()
     {
@@ -57,7 +59,7 @@ public class EternalNight extends BaseWeapon
             public Ingredient getRepairIngredient() {
                 return Ingredient.of(net.minecraft.world.item.Items.NETHERITE_INGOT); // 修复材料：下界合金锭
             }
-        }, new Properties(), 0, 0.25f, 1f, 0.18f, 24.0f, 0.4f, WeaponEnum.MAGIC);
+        }, new Properties(), (int)BASE_SPELL_DAMAGE, 0.25f, 1f, 0.18f, 24.0f, 0.4f, WeaponEnum.MAGIC);
         
         setStory("一把蕴含永恒黑暗力量的魔法武器，发射的黑色法球会在命中目标后产生致命黑雾，吞噬一切光明。");
     }
@@ -67,7 +69,14 @@ public class EternalNight extends BaseWeapon
         ItemStack itemstack = player.getItemInHand(hand);
 
         if (!level.isClientSide()) {
-            // 计算法术伤害（使用BaseWeapon的伤害计算逻辑）
+            if (!ManaSystem.safeConsumeMana(player, MANA_COST)) {
+                player.displayClientMessage(
+                        net.minecraft.network.chat.Component.literal("§c魔力不足！"),
+                        true
+                );
+                return InteractionResultHolder.fail(itemstack);
+            }
+
             float spellDamage = calculateSpellDamage(player, itemstack);
 
             // 创建永恒之夜投射物

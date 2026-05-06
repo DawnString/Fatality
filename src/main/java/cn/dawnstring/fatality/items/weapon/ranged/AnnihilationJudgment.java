@@ -57,6 +57,9 @@ public class AnnihilationJudgment extends BaseWeapon {
     
     // 存储标记的目标
     private final Map<UUID, Long> markedTargets = new HashMap<>();
+    private Vec3 activeFieldCenter = null;
+    private int activeFieldTicks = 0;
+    private ItemStack activeFieldWeapon = null;
     
     public AnnihilationJudgment() {
         super(new Tier() {
@@ -211,13 +214,8 @@ public class AnnihilationJudgment extends BaseWeapon {
          // 为领域内的实体应用持续伤害效果
          for (Entity entity : level.getEntities(player, fieldBounds)) {
              if (entity instanceof LivingEntity target && target != player) {
-                 // 应用星光标记效果（作为领域效果的视觉指示）
-                 target.addEffect(new MobEffectInstance(ModEffects.STARLIGHT_MARK.get(), ANNIHILATION_DURATION_TICKS, 0));
-                 
-                 // 设置伤害来源信息
-                 target.getPersistentData().putFloat("annihilation_damage", calculateFinalDamage(player, weapon, target) * ANNIHILATION_DAMAGE_MULTIPLIER);
-                 target.getPersistentData().putUUID("annihilation_source", player.getUUID());
-             }
+                target.addEffect(new MobEffectInstance(ModEffects.STARLIGHT_MARK.get(), ANNIHILATION_DURATION_TICKS, 0));
+            }
          }
          
          // 生成领域边界粒子
@@ -231,39 +229,10 @@ public class AnnihilationJudgment extends BaseWeapon {
       * 启动寂灭领域持续伤害计时器
       */
      private void startAnnihilationFieldTimer(Level level, Vec3 center, Player player, ItemStack weapon) {
-         // 每20ticks（1秒）造成一次伤害，持续5秒
-         for (int i = 1; i <= 5; i++) {
-             final int tickDelay = i * 20;
-             level.getServer().execute(() -> {
-                 try {
-                     Thread.sleep(tickDelay * 50); // 转换为毫秒
-                     
-                     if (!level.isClientSide() && player.isAlive()) {
-                         // 获取领域内的所有实体
-                         AABB fieldBounds = new AABB(
-                                 center.x - ANNIHILATION_FIELD_RADIUS, center.y - ANNIHILATION_FIELD_RADIUS, center.z - ANNIHILATION_FIELD_RADIUS,
-                                 center.x + ANNIHILATION_FIELD_RADIUS, center.y + ANNIHILATION_FIELD_RADIUS, center.z + ANNIHILATION_FIELD_RADIUS
-                         );
-                         
-                         for (Entity entity : level.getEntities(player, fieldBounds)) {
-                             if (entity instanceof LivingEntity target && target != player) {
-                                 // 计算领域伤害
-                                 float damage = calculateFinalDamage(player, weapon, target) * ANNIHILATION_DAMAGE_MULTIPLIER;
-                                 
-                                 // 造成持续伤害
-                                 target.hurt(target.damageSources().magic(), damage);
-                                 
-                                 // 生成领域伤害粒子
-                                 spawnFieldDamageParticles(level, target);
-                             }
-                         }
-                     }
-                 } catch (InterruptedException e) {
-                     Thread.currentThread().interrupt();
-                 }
-             });
-         }
-     }
+        this.activeFieldCenter = center;
+        this.activeFieldTicks = 0;
+        this.activeFieldWeapon = weapon.copy();
+    }
      
      /**
       * 应用星光标记效果
@@ -468,14 +437,43 @@ public class AnnihilationJudgment extends BaseWeapon {
     @Override
     public void inventoryTick(ItemStack stack, Level level, Entity entity, int slotId, boolean isSelected) {
         super.inventoryTick(stack, level, entity, slotId, isSelected);
-        
-        if (!level.isClientSide() && entity instanceof Player player && isSelected) {
-            long currentTime = System.currentTimeMillis();
-            
-            // 清理超过标记持续时间的记录
-            markedTargets.entrySet().removeIf(entry -> 
-                currentTime - entry.getValue() > MARK_DURATION_TICKS * 50
-            );
+
+        if (!level.isClientSide() && entity instanceof Player player) {
+            if (activeFieldCenter != null && activeFieldWeapon != null) {
+                activeFieldTicks++;
+
+                if (activeFieldTicks % 20 == 0 && activeFieldTicks <= 100) {
+                    AABB fieldBounds = new AABB(
+                            activeFieldCenter.x - ANNIHILATION_FIELD_RADIUS,
+                            activeFieldCenter.y - ANNIHILATION_FIELD_RADIUS,
+                            activeFieldCenter.z - ANNIHILATION_FIELD_RADIUS,
+                            activeFieldCenter.x + ANNIHILATION_FIELD_RADIUS,
+                            activeFieldCenter.y + ANNIHILATION_FIELD_RADIUS,
+                            activeFieldCenter.z + ANNIHILATION_FIELD_RADIUS
+                    );
+
+                    for (Entity e : level.getEntities(player, fieldBounds)) {
+                        if (e instanceof LivingEntity target && target != player) {
+                            float damage = calculateFinalDamage(player, activeFieldWeapon, target) * ANNIHILATION_DAMAGE_MULTIPLIER;
+                            target.hurt(target.damageSources().magic(), damage);
+                            spawnFieldDamageParticles(level, target);
+                        }
+                    }
+                }
+
+                if (activeFieldTicks >= 100) {
+                    activeFieldCenter = null;
+                    activeFieldWeapon = null;
+                    activeFieldTicks = 0;
+                }
+            }
+
+            if (isSelected) {
+                long currentTime = System.currentTimeMillis();
+                markedTargets.entrySet().removeIf(entry ->
+                    currentTime - entry.getValue() > MARK_DURATION_TICKS * 50
+                );
+            }
         }
     }
 }

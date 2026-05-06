@@ -109,20 +109,7 @@ public class FlameStar extends BaseWeapon {
          ItemStack itemstack = player.getItemInHand(hand);
          
          if (!level.isClientSide()) {
-             // 检查魔力是否足够
-             if (hasEnoughMana(player)) {
-                 // 消耗魔力
-                 consumeMana(player);
-                 
-                 // 喷射液态火焰
-                 sprayLiquidFlame(player, level, itemstack);
-                 
-                 // 设置冷却时间
-                 player.getCooldowns().addCooldown(this, 5); // 0.25秒冷却
-                 
-                 return InteractionResultHolder.success(itemstack);
-             } else {
-                 // 魔力不足提示
+             if (!ManaSystem.safeConsumeMana(player, MANA_COST)) {
                  if (level.isClientSide()) {
                      player.displayClientMessage(
                              net.minecraft.network.chat.Component.literal("§c魔力不足！"),
@@ -131,6 +118,12 @@ public class FlameStar extends BaseWeapon {
                  }
                  return InteractionResultHolder.fail(itemstack);
              }
+             
+             sprayLiquidFlame(player, level, itemstack);
+             
+             player.getCooldowns().addCooldown(this, 5);
+             
+             return InteractionResultHolder.success(itemstack);
          }
          
          return InteractionResultHolder.pass(itemstack);
@@ -140,86 +133,39 @@ public class FlameStar extends BaseWeapon {
       * 喷射液态火焰
       */
      private void sprayLiquidFlame(Player player, Level level, ItemStack weapon) {
-         // 播放喷射音效
          level.playSound(null, player.getX(), player.getY(), player.getZ(),
                  SoundEvents.FIRECHARGE_USE, SoundSource.PLAYERS, 1.0F, 1.0F);
          
-         // 生成喷射粒子效果
          spawnSprayParticles(level, player);
          
-         // 获取锥形区域内的所有实体
          Vec3 startPos = player.getEyePosition();
          Vec3 lookVec = player.getLookAngle();
-         Vec3 endPos = startPos.add(lookVec.scale(FLAME_RANGE));
          
-         // 计算锥形区域
          AABB coneBounds = calculateConeBounds(startPos, lookVec, FLAME_RANGE, FLAME_ANGLE);
          
-         // 对锥形区域内的实体应用火焰效果
          for (Entity entity : level.getEntities(player, coneBounds)) {
              if (entity instanceof LivingEntity target && target != player) {
-                 // 应用液态火焰效果
                  applyLiquidFlameEffect(target, level, player, weapon);
              }
          }
-         
-         // 启动持续伤害计时器
-         startFlameDamageTimer(level, player, weapon);
      }
      
      /**
       * 应用液态火焰效果
       */
      private void applyLiquidFlameEffect(LivingEntity target, Level level, Player player, ItemStack weapon) {
-         // 设置目标为着火状态
-         target.setSecondsOnFire(FLAME_DURATION_TICKS / 20); // 转换为秒
+         target.setSecondsOnFire(FLAME_DURATION_TICKS / 20);
          
-         // 设置火焰伤害来源
-         target.getPersistentData().putFloat("flame_damage", calculateFinalDamage(player, weapon, target));
+         float baseDamage = calculateFinalDamage(player, weapon, target);
+         float burnMarkBonus = getBurnMarkBonus(target);
+         float damage = baseDamage * (1.0f + burnMarkBonus);
+         
+         target.hurt(target.damageSources().onFire(), damage);
+         
          target.getPersistentData().putUUID("flame_source", player.getUUID());
          target.getPersistentData().putBoolean("liquid_flame", true);
-     }
-     
-     /**
-      * 启动火焰持续伤害计时器
-      */
-     private void startFlameDamageTimer(Level level, Player player, ItemStack weapon) {
-         // 每20ticks（1秒）造成一次伤害，持续4秒
-         for (int i = 1; i <= 4; i++) {
-             final int tickDelay = i * 20;
-             level.getServer().execute(() -> {
-                 try {
-                     Thread.sleep(tickDelay * 50); // 转换为毫秒
-                     
-                     if (!level.isClientSide() && player.isAlive()) {
-                         // 获取锥形区域内的所有实体
-                         Vec3 startPos = player.getEyePosition();
-                         Vec3 lookVec = player.getLookAngle();
-                         AABB coneBounds = calculateConeBounds(startPos, lookVec, FLAME_RANGE, FLAME_ANGLE);
-                         
-                         for (Entity entity : level.getEntities(player, coneBounds)) {
-                             if (entity instanceof LivingEntity target && target != player) {
-                                 // 检查是否为液态火焰目标
-                                 if (target.getPersistentData().getBoolean("liquid_flame")) {
-                                     // 计算伤害（考虑灼痕加成）
-                                     float baseDamage = calculateFinalDamage(player, weapon, target);
-                                     float burnMarkBonus = getBurnMarkBonus(target);
-                                     float damage = baseDamage * (1.0f + burnMarkBonus);
-                                     
-                                     // 造成火焰伤害
-                                     target.hurt(target.damageSources().onFire(), damage);
-                                     
-                                     // 生成火焰伤害粒子
-                                     spawnFlameDamageParticles(level, target);
-                                 }
-                             }
-                         }
-                     }
-                 } catch (InterruptedException e) {
-                     Thread.currentThread().interrupt();
-                 }
-             });
-         }
+         
+         spawnFlameDamageParticles(level, target);
      }
      
      /**

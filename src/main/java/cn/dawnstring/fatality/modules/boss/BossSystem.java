@@ -1,16 +1,19 @@
 package cn.dawnstring.fatality.modules.boss;
 
+import cn.dawnstring.fatality.Fatality;
 import cn.dawnstring.fatality.api.events.FatalityEvent;
 import cn.dawnstring.fatality.api.systems.IModSystem;
 import cn.dawnstring.fatality.core.events.FatalityEventBus;
 import net.minecraft.world.entity.player.Player;
+import org.apache.logging.log4j.Logger;
 
 /**
  * BOSS系统模块
  * 基于事件驱动的BOSS战斗系统
  */
 public class BossSystem implements IModSystem {
-    
+
+    private static final Logger LOGGER = Fatality.LOGGER;
     private static final BossSystem INSTANCE = new BossSystem();
     
     private BossSystem() {
@@ -29,7 +32,7 @@ public class BossSystem implements IModSystem {
     
     @Override
     public void initialize() {
-        System.out.println("Boss System initialized");
+        LOGGER.info("Boss System initialized");
     }
     
     /**
@@ -60,8 +63,7 @@ public class BossSystem implements IModSystem {
      * 为玩家增强BOSS
      */
     private void enhanceBossForPlayer(Player player) {
-        // 实现BOSS增强逻辑
-        System.out.println("Enhancing boss for player: " + player.getName().getString());
+        LOGGER.info("Enhancing boss for player: {}", player.getName().getString());
     }
     
     /**

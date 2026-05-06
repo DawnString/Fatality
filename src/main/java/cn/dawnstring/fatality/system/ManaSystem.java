@@ -163,23 +163,23 @@ public class ManaSystem
      */
     public static boolean consumeMana(Player player, float amount) {
         if (amount <= 0) {
-            return true; // 消耗0点魔法值总是成功
+            return true;
+        }
+        
+        if (player.level().isClientSide()) {
+            return true;
         }
         
         float currentMana = getCurrentMana(player);
-        
-        // 使用容差比较，避免浮点数精度问题
-        // 当魔法值非常接近消耗值时（差值小于0.001），也认为足够
+
         if (currentMana >= amount || Math.abs(currentMana - amount) < 0.001f) {
-            // 确保不会消耗负的魔法值
             float newMana = Math.max(0, currentMana - amount);
             setCurrentMana(player, newMana);
-            
-            // 立即同步魔法数据到客户端
-            if (!player.level().isClientSide() && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+
+            if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
                 ManaSyncHandler.syncManaDataToClient(serverPlayer);
             }
-            
+
             return true;
         }
         return false;

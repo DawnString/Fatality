@@ -56,7 +56,7 @@ public class GameEventSyncPacket {
         if (minecraft.level != null) {
             // 如果事件ID为空，表示事件结束
             if (packet.eventId.isEmpty()) {
-                GameEventManager.removeClientActiveEvent(minecraft.level);
+                GameEventManager.removeClientEvent(minecraft.level);
                 return;
             }
 

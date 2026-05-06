@@ -2,6 +2,7 @@ package cn.dawnstring.fatality.registry;
 
 import cn.dawnstring.fatality.entity.*;
 import cn.dawnstring.fatality.entity.boss.enderdragon.DragonFlameBall;
+import cn.dawnstring.fatality.entity.boss.lordofender.*;
 import cn.dawnstring.fatality.entity.projectile.*;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -778,4 +779,63 @@ public class ModEntities
                             .clientTrackingRange(8)  // 奇点弹需要更大的追踪范围
                             .updateInterval(1)
                             .build("singularity_projectile"));
+
+    // === Lord of Ender Boss and Skills ===
+    public static final RegistryObject<EntityType<LordOfEnderEntity>> LORD_OF_ENDER =
+            ModRegistry.ENTITIES.register("lord_of_ender",
+                    () -> EntityType.Builder.<LordOfEnderEntity>of(LordOfEnderEntity::new, MobCategory.MONSTER)
+                            .sized(2.0f, 4.0f)
+                            .clientTrackingRange(16)
+                            .updateInterval(1)
+                            .fireImmune()
+                            .build("lord_of_ender"));
+
+    public static final RegistryObject<EntityType<EnderEnergyCrystal>> ENDER_ENERGY_CRYSTAL =
+            ModRegistry.ENTITIES.register("ender_energy_crystal",
+                    () -> EntityType.Builder.<EnderEnergyCrystal>of(EnderEnergyCrystal::new, MobCategory.MISC)
+                            .sized(1.5f, 1.5f)
+                            .clientTrackingRange(16)
+                            .updateInterval(1)
+                            .fireImmune()
+                            .build("ender_energy_crystal"));
+
+    public static final RegistryObject<EntityType<EnderSpearProjectile>> ENDER_SPEAR =
+            ModRegistry.ENTITIES.register("ender_spear",
+                    () -> EntityType.Builder.<EnderSpearProjectile>of(EnderSpearProjectile::new, MobCategory.MISC)
+                            .sized(0.5f, 0.5f)
+                            .clientTrackingRange(8)
+                            .updateInterval(1)
+                            .build("ender_spear"));
+
+    public static final RegistryObject<EntityType<FireExplosionBall>> FIRE_EXPLOSION_BALL =
+            ModRegistry.ENTITIES.register("fire_explosion_ball",
+                    () -> EntityType.Builder.<FireExplosionBall>of(FireExplosionBall::new, MobCategory.MISC)
+                            .sized(1.0f, 1.0f)
+                            .clientTrackingRange(8)
+                            .updateInterval(1)
+                            .build("fire_explosion_ball"));
+
+    public static final RegistryObject<EntityType<IcePrismCore>> ICE_PRISM_CORE =
+            ModRegistry.ENTITIES.register("ice_prism_core",
+                    () -> EntityType.Builder.<IcePrismCore>of(IcePrismCore::new, MobCategory.MISC)
+                            .sized(0.8f, 0.8f)
+                            .clientTrackingRange(8)
+                            .updateInterval(1)
+                            .build("ice_prism_core"));
+
+    public static final RegistryObject<EntityType<IcePrism>> ICE_PRISM =
+            ModRegistry.ENTITIES.register("ice_prism",
+                    () -> EntityType.Builder.<IcePrism>of(IcePrism::new, MobCategory.MISC)
+                            .sized(0.4f, 0.4f)
+                            .clientTrackingRange(8)
+                            .updateInterval(1)
+                            .build("ice_prism"));
+
+    public static final RegistryObject<EntityType<EnderOrb>> ENDER_ORB =
+            ModRegistry.ENTITIES.register("ender_orb",
+                    () -> EntityType.Builder.<EnderOrb>of(EnderOrb::new, MobCategory.MISC)
+                            .sized(0.6f, 0.6f)
+                            .clientTrackingRange(8)
+                            .updateInterval(1)
+                            .build("ender_orb"));
 }

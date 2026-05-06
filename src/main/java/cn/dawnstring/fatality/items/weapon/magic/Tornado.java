@@ -57,7 +57,7 @@ public class Tornado extends BaseWeapon
             public Ingredient getRepairIngredient() {
                 return null; // 不能修复
             }
-        }, new Properties(), 0, 0.5f, 1f, 0.20f, 0.28f, 0.3f, WeaponEnum.MAGIC);
+        }, new Properties(), (int)BASE_MAGIC_DAMAGE, 0.5f, 1f, 0.20f, 0.28f, 0.3f, WeaponEnum.MAGIC);
         
         setStory("一把能够召唤龙卷风的魔法武器，释放的龙卷风会直线前进，吸引周围的敌人并造成持续伤害。");
     }
@@ -98,7 +98,7 @@ public class Tornado extends BaseWeapon
      */
     private void performTornadoAttack(Level level, Player player, ItemStack itemstack) {
         // 计算龙卷风伤害
-        float tornadoDamage = calculateTornadoDamage(player, itemstack);
+        float tornadoDamage = calculateFinalDamage(player, itemstack, null);
         
         // 创建龙卷风投射物
         TornadoProjectile tornado = new TornadoProjectile(level, player, tornadoDamage);
@@ -111,38 +111,6 @@ public class Tornado extends BaseWeapon
         level.addFreshEntity(tornado);
     }
     
-    /**
-     * 计算龙卷风伤害（使用BaseWeapon相同的计算方法）
-     */
-    public float calculateTornadoDamage(Player player, ItemStack stack) {
-        // 使用BaseWeapon的伤害计算逻辑，但基于魔法伤害
-        float baseDamage = BASE_MAGIC_DAMAGE;
-
-        // 计算基础伤害加成（基于饰品）
-        float accessoryBaseBonus = calculateAccessoryBaseBonus(player);
-
-        // 计算其他伤害加成（饰品、药水等）
-        float otherBonus = calculateOtherBonus(player);
-
-        // 计算伤害浮动值
-        float fluctuation = calculateDamageFluctuation();
-
-        // 判断是否暴击
-        boolean isCritical = isCriticalHit(player);
-
-        float finalDamage;
-        if (isCritical) {
-            // 暴击伤害公式（与BaseWeapon保持一致）
-            float criticalBonus = getCriticalDamageMultiplier(player);
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.8f * criticalBonus * fluctuation;
-        } else {
-            // 普通伤害公式（与BaseWeapon保持一致）
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.9f * fluctuation;
-        }
-
-        return Math.max(0, finalDamage);
-    }
-
     /**
      * 重写暴击特效，添加龙卷风特有的暴击效果
      */

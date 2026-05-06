@@ -55,7 +55,7 @@ public class Blowgun extends BaseWeapon
             public Ingredient getRepairIngredient() {
                 return null;
             }
-        }, new Properties(), 0, 0.8f, 1f, 0.05f, 0.05f, 0.4f, WeaponEnum.RANGED);
+        }, new Properties(), (int)BASE_ARROW_DAMAGE, 0.8f, 1f, 0.05f, 0.05f, 0.4f, WeaponEnum.RANGED);
     }
 
     @Override
@@ -64,7 +64,7 @@ public class Blowgun extends BaseWeapon
 
         if (!level.isClientSide()) {
             // 计算箭矢伤害（使用BaseWeapon的伤害计算逻辑）
-            float arrowDamage = calculateArrowDamage(player, itemstack);
+            float arrowDamage = calculateBulletDamage(player, itemstack);
 
             // 创建中毒箭矢投射物
             Arrow arrow = new Arrow(level, player);
@@ -97,35 +97,7 @@ public class Blowgun extends BaseWeapon
         return InteractionResultHolder.success(itemstack);
     }
 
-    /**
-     * 计算箭矢伤害（使用BaseWeapon相同的计算方法）
-     */
-    public float calculateArrowDamage(Player player, ItemStack stack) {
-        // 使用BaseWeapon的伤害计算逻辑，但基于箭矢伤害
-        float baseDamage = BASE_ARROW_DAMAGE;
-
-        // 计算基础伤害加成（基于饰品）
-        float accessoryBaseBonus = calculateAccessoryBaseBonus(player);
-
-        // 计算其他伤害加成（饰品、药水等）
-        float otherBonus = calculateOtherBonus(player);
-
-        // 计算伤害浮动值
-        float fluctuation = calculateDamageFluctuation();
-
-        // 判断是否暴击
-        boolean isCritical = isCriticalHit(player);
-
-        float finalDamage;
-        if (isCritical) {
-            // 暴击伤害公式（与BaseWeapon保持一致）
-            float criticalBonus = getCriticalDamageMultiplier(player);
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.8f * criticalBonus * fluctuation;
-        } else {
-            // 普通伤害公式（与BaseWeapon保持一致）
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.9f * fluctuation;
-        }
-
-        return Math.max(0, finalDamage);
+    public float calculateBulletDamage(Player player, ItemStack stack) {
+        return calculateFinalDamage(player, stack, null);
     }
 }

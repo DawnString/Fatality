@@ -3,6 +3,7 @@ package cn.dawnstring.fatality.items.weapon.magic;
 import cn.dawnstring.fatality.entity.projectile.DecayOrbProjectile;
 import cn.dawnstring.fatality.items.BaseWeapon;
 import cn.dawnstring.fatality.items.WeaponEnum;
+import cn.dawnstring.fatality.system.ManaSystem;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -22,8 +23,9 @@ import net.minecraft.world.level.Level;
  */
 public class Decay extends BaseWeapon {
     
-    private static final int COOLDOWN_TICKS = 20; // 冷却时间20tick（1秒）
-    private static final int CHARGE_TIME_PER_LEVEL = 40; // 每级蓄力时间40tick（2秒）
+    private static final int COOLDOWN_TICKS = 20;
+    private static final float MANA_COST = 8.0f;
+    private static final int CHARGE_TIME_PER_LEVEL = 40;
     
     public Decay() {
         super(new Tier() {
@@ -92,7 +94,14 @@ public class Decay extends BaseWeapon {
         if (entity instanceof Player && !level.isClientSide()) {
             Player player = (Player) entity;
             
-            // 计算蓄力等级和伤害倍数
+            if (!ManaSystem.safeConsumeMana(player, MANA_COST)) {
+                player.displayClientMessage(
+                        net.minecraft.network.chat.Component.literal("§c魔力不足！"),
+                        true
+                );
+                return;
+            }
+            
             int chargeLevel = Math.min(2, timeCharged / CHARGE_TIME_PER_LEVEL);
             float damageMultiplier = getDamageMultiplierForChargeLevel(chargeLevel);
             

@@ -62,6 +62,11 @@ public class Starburst extends BaseWeapon {
     private final Map<UUID, Integer> hitCountMap = new HashMap<>();
     // 蓄力状态
     private final Map<UUID, Long> chargingPlayers = new HashMap<>();
+    // 星爆领域状态（替代 Thread.sleep）
+    private Vec3 activeFieldCenter = null;
+    private int activeFieldTicks = 0;
+    private ItemStack activeFieldWeapon = null;
+    private boolean fieldExploded = false;
     
     public Starburst() {
         super(new Tier() {
@@ -120,14 +125,11 @@ public class Starburst extends BaseWeapon {
              long chargeTime = getChargeTime(player);
              
              if (chargeTime >= SUPERNOVA_CHARGE_TIME_TICKS) {
-                 // 蓄力完成，发射超新星
-                 if (hasEnoughMana(player, MANA_COST_SUPERNOVA)) {
-                     consumeMana(player, MANA_COST_SUPERNOVA);
+                 if (ManaSystem.safeConsumeMana(player, MANA_COST_SUPERNOVA)) {
                      fireSupernova(player, level, itemstack);
                      stopCharging(player);
                      return InteractionResultHolder.success(itemstack);
                  } else {
-                     // 魔力不足提示
                      player.displayClientMessage(
                              net.minecraft.network.chat.Component.literal("§c魔力不足！"),
                              true
@@ -136,17 +138,13 @@ public class Starburst extends BaseWeapon {
                      return InteractionResultHolder.fail(itemstack);
                  }
              } else {
-                 // 普通攻击：发射恒星碎片
-                 if (hasEnoughMana(player, MANA_COST_NORMAL)) {
-                     consumeMana(player, MANA_COST_NORMAL);
+                 if (ManaSystem.safeConsumeMana(player, MANA_COST_NORMAL)) {
                      fireStarFragment(player, level, itemstack);
-                     
-                     // 设置冷却时间
-                     player.getCooldowns().addCooldown(this, 5); // 0.25秒冷却
-                     
+
+                     player.getCooldowns().addCooldown(this, 5);
+
                      return InteractionResultHolder.success(itemstack);
                  } else {
-                     // 魔力不足提示
                      player.displayClientMessage(
                              net.minecraft.network.chat.Component.literal("§c魔力不足！"),
                              true
@@ -310,41 +308,11 @@ public class Starburst extends BaseWeapon {
       * 启动星爆领域计时器
       */
      private void startStarburstFieldTimer(Vec3 centerPos, Level level, Player player, ItemStack weapon) {
-         // 领域持续时间和爆炸时间
-         final int fieldDurationTicks = 100; // 5秒
-         final int explosionDelayTicks = fieldDurationTicks;
-         
-         // 领域持续伤害（每秒1次，持续5秒）
-         for (int i = 1; i <= 5; i++) {
-             final int tickDelay = i * 20;
-             level.getServer().execute(() -> {
-                 try {
-                     Thread.sleep(tickDelay * 50); // 转换为毫秒
-                     
-                     if (!level.isClientSide() && player.isAlive()) {
-                         // 对领域内目标造成持续伤害并吸引
-                         applyStarburstFieldEffect(centerPos, level, player, weapon, tickDelay / 20);
-                     }
-                 } catch (InterruptedException e) {
-                     Thread.currentThread().interrupt();
-                 }
-             });
-         }
-         
-         // 最终爆炸
-         level.getServer().execute(() -> {
-             try {
-                 Thread.sleep(explosionDelayTicks * 50); // 转换为毫秒
-                 
-                 if (!level.isClientSide() && player.isAlive()) {
-                     // 触发最终爆炸
-                     triggerStarburstExplosion(centerPos, level, player, weapon);
-                 }
-             } catch (InterruptedException e) {
-                 Thread.currentThread().interrupt();
-             }
-         });
-     }
+        this.activeFieldCenter = centerPos;
+        this.activeFieldTicks = 0;
+        this.activeFieldWeapon = weapon.copy();
+        this.fieldExploded = false;
+    }
      
      /**
       * 应用星爆领域效果
@@ -604,40 +572,27 @@ public class Starburst extends BaseWeapon {
          }
      }
      
-     // 魔力相关方法
-     private boolean hasEnoughMana(Player player, int manaCost) {
-         // 使用ManaSystem检查玩家魔力值是否足够
-         return ManaSystem.hasEnoughMana(player, manaCost);
-     }
-     
-     private void consumeMana(Player player, int manaCost) {
-         // 使用ManaSystem消耗玩家魔力
-         if (ManaSystem.safeConsumeMana(player, manaCost)) {
-             // 显示魔力消耗信息
-             if (player.level().isClientSide()) {
-                 player.displayClientMessage(
-                         net.minecraft.network.chat.Component.literal("§b消耗了 " + manaCost + " 点魔力"),
-                         true
-                 );
-             }
-         }
-     }
-     
-     /**
-      * 定期清理过期的命中计数
-      */
      @Override
-     public void inventoryTick(ItemStack stack, Level level, Entity entity, int slotId, boolean isSelected) {
-         super.inventoryTick(stack, level, entity, slotId, isSelected);
-         
-         if (!level.isClientSide() && entity instanceof Player player && isSelected) {
-             // 清理超过一定时间的命中计数（假设30秒后重置）
-             long currentTime = System.currentTimeMillis();
-             hitCountMap.entrySet().removeIf(entry -> {
-                 // 这里需要实现命中计数过期检查
-                 // 暂时保留所有计数
-                 return false;
-             });
-         }
-     }
+    public void inventoryTick(ItemStack stack, Level level, Entity entity, int slotId, boolean isSelected) {
+        super.inventoryTick(stack, level, entity, slotId, isSelected);
+
+        if (!level.isClientSide() && entity instanceof Player player) {
+            if (activeFieldCenter != null && activeFieldWeapon != null && !fieldExploded) {
+                activeFieldTicks++;
+
+                if (activeFieldTicks % 20 == 0 && activeFieldTicks <= 100) {
+                    int second = activeFieldTicks / 20;
+                    applyStarburstFieldEffect(activeFieldCenter, level, player, activeFieldWeapon, second);
+                }
+
+                if (activeFieldTicks >= 100) {
+                    triggerStarburstExplosion(activeFieldCenter, level, player, activeFieldWeapon);
+                    fieldExploded = true;
+                    activeFieldCenter = null;
+                    activeFieldWeapon = null;
+                    activeFieldTicks = 0;
+                }
+            }
+        }
+    }
 }

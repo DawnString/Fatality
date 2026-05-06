@@ -59,7 +59,7 @@ public class BubbleGunV2 extends BaseWeapon
             public Ingredient getRepairIngredient() {
                 return null; // 不能修复
             }
-        }, new Properties().fireResistant(), 0, 0.1f, 1f, 0.22f, 0.28f, 0.3f, WeaponEnum.RANGED);
+        }, new Properties().fireResistant(), (int)BASE_SMALL_BUBBLE_DAMAGE, 0.1f, 1f, 0.22f, 0.28f, 0.3f, WeaponEnum.RANGED);
         
         setStory("泡泡枪的升级版本，融合了追踪小泡泡和高速大泡泡的双重攻击模式。\n" +
                 "发射3个追踪小泡泡自动寻找目标，同时发射一个高速直线大泡泡造成高额伤害。\n" +
@@ -125,61 +125,24 @@ public class BubbleGunV2 extends BaseWeapon
      * 计算小泡泡伤害
      */
     public float calculateSmallBubbleDamage(Player player, ItemStack stack) {
-        // 使用BaseWeapon的伤害计算逻辑，但基于小泡泡伤害
-        float baseDamage = BASE_SMALL_BUBBLE_DAMAGE;
-
-        // 计算基础伤害加成（基于饰品）
-        float accessoryBaseBonus = calculateAccessoryBaseBonus(player);
-
-        // 计算其他伤害加成（饰品、药水等）
-        float otherBonus = calculateOtherBonus(player);
-
-        // 计算伤害浮动值
-        float fluctuation = calculateDamageFluctuation();
-
-        // 判断是否暴击
-        boolean isCritical = isCriticalHit(player);
-
-        float finalDamage;
-        if (isCritical) {
-            // 暴击伤害公式（与BaseWeapon保持一致）
-            float criticalBonus = getCriticalDamageMultiplier(player);
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.8f * criticalBonus * fluctuation;
-        } else {
-            // 普通伤害公式（与BaseWeapon保持一致）
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.9f * fluctuation;
-        }
-
-        return Math.max(0, finalDamage);
+        return calculateFinalDamage(player, stack, null);
     }
     
     /**
      * 计算大泡泡伤害
      */
     public float calculateBigBubbleDamage(Player player, ItemStack stack) {
-        // 使用BaseWeapon的伤害计算逻辑，但基于大泡泡伤害
-        float baseDamage = BASE_BIG_BUBBLE_DAMAGE;
-
-        // 计算基础伤害加成（基于饰品）
         float accessoryBaseBonus = calculateAccessoryBaseBonus(player);
-
-        // 计算其他伤害加成（饰品、药水等）
         float otherBonus = calculateOtherBonus(player);
-
-        // 计算伤害浮动值
         float fluctuation = calculateDamageFluctuation();
-
-        // 判断是否暴击
         boolean isCritical = isCriticalHit(player);
 
         float finalDamage;
         if (isCritical) {
-            // 暴击伤害公式（与BaseWeapon保持一致）
             float criticalBonus = getCriticalDamageMultiplier(player);
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.8f * criticalBonus * fluctuation;
+            finalDamage = BASE_BIG_BUBBLE_DAMAGE * accessoryBaseBonus * otherBonus * 0.8f * criticalBonus * fluctuation;
         } else {
-            // 普通伤害公式（与BaseWeapon保持一致）
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.9f * fluctuation;
+            finalDamage = BASE_BIG_BUBBLE_DAMAGE * accessoryBaseBonus * otherBonus * 0.9f * fluctuation;
         }
 
         return Math.max(0, finalDamage);

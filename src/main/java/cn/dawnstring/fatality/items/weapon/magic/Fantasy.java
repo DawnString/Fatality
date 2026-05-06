@@ -2,6 +2,7 @@ package cn.dawnstring.fatality.items.weapon.magic;
 
 import cn.dawnstring.fatality.items.BaseWeapon;
 import cn.dawnstring.fatality.items.WeaponEnum;
+import cn.dawnstring.fatality.system.ManaSystem;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -42,8 +43,8 @@ public class Fantasy extends BaseWeapon {
     private static final float CRIT_RATE = 0.30f;
     private static final float CRIT_DAMAGE = 0.30f;
     private static final float DAMAGE_VARIATION = 0.3f;
+    private static final float MANA_COST = 8.0f;
     
-    // 粒子组合类型
     private int currentMode = 0;
     private static final int MODE_COUNT = 4;
     
@@ -214,7 +215,10 @@ public class Fantasy extends BaseWeapon {
     private void attackTarget(Player player, LivingEntity target) {
         if (player.level().isClientSide()) return;
         
-        // 使用BaseWeapon的标准伤害计算方法
+        if (!ManaSystem.safeConsumeMana(player, MANA_COST)) {
+            return;
+        }
+        
         float baseDamage = calculateFinalDamage(player, null, target);
         
         // 根据模式调整伤害

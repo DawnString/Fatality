@@ -63,7 +63,7 @@ public class CommandersWhip extends BaseWeapon {
             public Ingredient getRepairIngredient() {
                 return Ingredient.of(net.minecraft.world.item.Items.IRON_INGOT); // 铁锭修复，指挥官风格
             }
-        }, new Properties(), 0, 0.25f, 1f, 0.08f, 0.07f, 0.4f, WeaponEnum.MELEE);
+        }, new Properties(), (int)BASE_DAMAGE, 0.25f, 1f, 0.08f, 0.07f, 0.4f, WeaponEnum.MELEE);
     }
 
     /**
@@ -171,32 +171,7 @@ public class CommandersWhip extends BaseWeapon {
      * 计算指挥官鞭子伤害
      */
     private float calculateCommandersWhipDamage(Player player) {
-        // 使用BaseWeapon的伤害计算逻辑
-        float baseDamage = BASE_DAMAGE;
-
-        // 计算基础伤害加成（基于饰品）
-        float accessoryBaseBonus = calculateAccessoryBaseBonus(player);
-
-        // 计算其他伤害加成（饰品、药水等）
-        float otherBonus = calculateOtherBonus(player);
-
-        // 计算伤害浮动值
-        float fluctuation = calculateDamageFluctuation();
-
-        // 判断是否暴击
-        boolean isCritical = isCriticalHit(player);
-
-        float finalDamage;
-        if (isCritical) {
-            // 暴击伤害公式（与BaseWeapon保持一致）
-            float criticalBonus = getCriticalDamageMultiplier(player);
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.8f * criticalBonus * fluctuation;
-        } else {
-            // 普通伤害公式（与BaseWeapon保持一致）
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.9f * fluctuation;
-        }
-
-        return Math.max(0, finalDamage);
+        return calculateFinalDamage(player, player.getMainHandItem(), null);
     }
 
     /**

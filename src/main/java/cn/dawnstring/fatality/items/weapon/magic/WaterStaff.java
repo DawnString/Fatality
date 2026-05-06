@@ -57,58 +57,41 @@ public class WaterStaff extends BaseWeapon
             public Ingredient getRepairIngredient() {
                 return null;
             }
-        }, new Properties(), 0, 0.8f, 1, 0.05f, 0.06f, 0.3f, WeaponEnum.MAGIC);
+        }, new Properties(), (int)BASE_MAGIC_DAMAGE, 0.8f, 1, 0.05f, 0.06f, 0.3f, WeaponEnum.MAGIC);
     }
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack itemstack = player.getItemInHand(hand);
 
-        // 检查玩家是否有足够的魔法值
-        if (!ManaSystem.safeConsumeMana(player, MANA_COST)) {
-            // 如果魔法值不足，提示玩家
-            if (level.isClientSide()) {
+        if (!level.isClientSide()) {
+            if (!ManaSystem.safeConsumeMana(player, MANA_COST)) {
                 player.displayClientMessage(net.minecraft.network.chat.Component.literal("§c魔法值不足！需要" + MANA_COST + "点魔法值"), true);
+                return InteractionResultHolder.fail(itemstack);
             }
-            return InteractionResultHolder.fail(itemstack);
-        }
 
-        // 检测玩家准星对准的最近生物
-        LivingEntity target = findTargetEntity(player, level);
+            LivingEntity target = findTargetEntity(player, level);
 
-        if (target != null) {
-            // 计算龙卷风伤害
-            float tornadoDamage = calculateTornadoDamage(player, itemstack);
+            if (target != null) {
+                float tornadoDamage = calculateFinalDamage(player, itemstack, null);
 
-            // 创建龙卷风效果（在服务器端创建实体）
-            if (!level.isClientSide()) {
                 TornadoEffect tornado = new TornadoEffect(level, player, target, tornadoDamage);
                 level.addFreshEntity(tornado);
 
-                // 播放施法音效
                 level.playSound(null, player.getX(), player.getY(), player.getZ(),
                         SoundEvents.BUBBLE_COLUMN_UPWARDS_AMBIENT, SoundSource.PLAYERS, 1.0F, 1.2F);
-
-                // 显示目标信息
                 player.displayClientMessage(net.minecraft.network.chat.Component.literal("§b对 " + target.getName().getString() + " 施放了水龙卷！"), true);
             } else {
-                // 在客户端也播放音效和显示信息
-                level.playSound(null, player.getX(), player.getY(), player.getZ(),
-                        SoundEvents.BUBBLE_COLUMN_UPWARDS_AMBIENT, SoundSource.PLAYERS, 1.0F, 1.2F);
-                player.displayClientMessage(net.minecraft.network.chat.Component.literal("§b对 " + target.getName().getString() + " 施放了水龙卷！"), true);
-            }
-        } else {
-            // 如果没有找到目标，提示玩家
-            if (level.isClientSide()) {
                 player.displayClientMessage(net.minecraft.network.chat.Component.literal("§c未找到目标！请对准生物使用"), true);
+                return InteractionResultHolder.fail(itemstack);
             }
-            return InteractionResultHolder.fail(itemstack);
+
+            player.getCooldowns().addCooldown(this, COOLDOWN_TICKS);
+
+            return InteractionResultHolder.success(itemstack);
         }
 
-        // 设置冷却时间
-        player.getCooldowns().addCooldown(this, COOLDOWN_TICKS);
-
-        return InteractionResultHolder.success(itemstack);
+        return InteractionResultHolder.pass(itemstack);
     }
 
     /**
@@ -137,34 +120,5 @@ public class WaterStaff extends BaseWeapon
         }
 
         return closestTarget;
-    }
-
-    public float calculateTornadoDamage(Player player, ItemStack stack) {
-        // 使用BaseWeapon的伤害计算逻辑，但基于魔法伤害
-        float baseDamage = BASE_MAGIC_DAMAGE;
-
-        // 计算基础伤害加成（基于饰品）
-        float accessoryBaseBonus = calculateAccessoryBaseBonus(player);
-
-        // 计算其他伤害加成（饰品、药水等）
-        float otherBonus = calculateOtherBonus(player);
-
-        // 计算伤害浮动值
-        float fluctuation = calculateDamageFluctuation();
-
-        // 判断是否暴击
-        boolean isCritical = isCriticalHit(player);
-
-        float finalDamage;
-        if (isCritical) {
-            // 暴击伤害公式（与BaseWeapon保持一致）
-            float criticalBonus = getCriticalDamageMultiplier(player);
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.8f * criticalBonus * fluctuation;
-        } else {
-            // 普通伤害公式（与BaseWeapon保持一致）
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.9f * fluctuation;
-        }
-
-        return Math.max(1.0f, finalDamage); // 确保最小伤害为1
     }
 }

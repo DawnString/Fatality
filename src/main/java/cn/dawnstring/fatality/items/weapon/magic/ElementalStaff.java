@@ -69,14 +69,13 @@ public class ElementalStaff extends BaseWeapon
                 return null; // 不能修复
             }
         }, new Properties().stacksTo(1).fireResistant(),
-              0, // 基础攻击伤害（魔法武器使用魔法伤害）
-              0.2f, // 攻击速度（0.2秒）
-              1.0f, // 基础伤害倍率
-              0.28f, // 暴击率
-              0.36f, // 暴击伤害倍率
-              0.3f, // 伤害浮动
-              WeaponEnum.MAGIC // 武器类型：魔法
-        );
+              (int)BASE_MAGIC_DAMAGE,
+              0.2f,
+              1.0f,
+              0.28f,
+              0.36f,
+              0.3f,
+              WeaponEnum.MAGIC);
         
         setStory("元素法杖，蕴含着四大元素的神秘力量。\n" +
                 "右键召唤元素弹幕，弹幕会自动追踪最近的敌人，\n" +
@@ -126,7 +125,7 @@ public class ElementalStaff extends BaseWeapon
      */
     private void performElementalBarrageAttack(Level level, Player player, ItemStack itemstack) {
         // 计算元素伤害
-        float elementalDamage = calculateElementalDamage(player, itemstack);
+        float elementalDamage = calculateFinalDamage(player, itemstack, null);
         
         // 随机生成3-6个弹幕
         int barrageCount = level.random.nextInt(MAX_BARRAGE_COUNT - MIN_BARRAGE_COUNT + 1) + MIN_BARRAGE_COUNT;
@@ -161,38 +160,6 @@ public class ElementalStaff extends BaseWeapon
         
         // 生成施法粒子效果
         spawnCastParticles(level, player);
-    }
-    
-    /**
-     * 计算元素伤害（使用BaseWeapon相同的计算方法）
-     */
-    public float calculateElementalDamage(Player player, ItemStack stack) {
-        // 使用BaseWeapon的伤害计算逻辑，但基于魔法伤害
-        float baseDamage = BASE_MAGIC_DAMAGE;
-
-        // 计算基础伤害加成（基于饰品）
-        float accessoryBaseBonus = calculateAccessoryBaseBonus(player);
-
-        // 计算其他伤害加成（饰品、药水等）
-        float otherBonus = calculateOtherBonus(player);
-
-        // 计算伤害浮动值
-        float fluctuation = calculateDamageFluctuation();
-
-        // 判断是否暴击
-        boolean isCritical = isCriticalHit(player);
-
-        float finalDamage;
-        if (isCritical) {
-            // 暴击伤害公式（与BaseWeapon保持一致）
-            float criticalBonus = getCriticalDamageMultiplier(player);
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.8f * criticalBonus * fluctuation;
-        } else {
-            // 普通伤害公式（与BaseWeapon保持一致）
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.9f * fluctuation;
-        }
-
-        return Math.max(0, finalDamage);
     }
     
     /**

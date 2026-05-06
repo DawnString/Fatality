@@ -3,6 +3,7 @@ package cn.dawnstring.fatality.items.weapon.magic;
 import cn.dawnstring.fatality.entity.projectile.BurnToAshesProjectile;
 import cn.dawnstring.fatality.items.BaseWeapon;
 import cn.dawnstring.fatality.items.WeaponEnum;
+import cn.dawnstring.fatality.system.ManaSystem;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -22,7 +23,8 @@ import net.minecraft.world.level.Level;
  */
 public class BurnToAshes extends BaseWeapon {
     
-    private static final int COOLDOWN_TICKS = 20; // 冷却时间20tick（1秒）
+    private static final int COOLDOWN_TICKS = 20;
+    private static final float MANA_COST = 8.0f;
     
     public BurnToAshes() {
         super(new Tier() {
@@ -67,7 +69,14 @@ public class BurnToAshes extends BaseWeapon {
         ItemStack itemstack = player.getItemInHand(hand);
         
         if (!level.isClientSide()) {
-            // 计算火球伤害
+            if (!ManaSystem.safeConsumeMana(player, MANA_COST)) {
+                player.displayClientMessage(
+                        net.minecraft.network.chat.Component.literal("§c魔力不足！"),
+                        true
+                );
+                return InteractionResultHolder.fail(itemstack);
+            }
+
             float fireballDamage = calculateFinalDamage(player, itemstack, null);
             
             // 创建焚尽火球投射物

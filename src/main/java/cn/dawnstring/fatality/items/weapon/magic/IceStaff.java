@@ -57,7 +57,7 @@ public class IceStaff extends BaseWeapon
             public Ingredient getRepairIngredient() {
                 return null;
             }
-        }, new Properties(), 0, 0.7f, 1, 0.08f, 0.08f, 0.3f, WeaponEnum.MAGIC);
+        }, new Properties(), (int)BASE_MAGIC_DAMAGE, 0.7f, 1, 0.08f, 0.08f, 0.3f, WeaponEnum.MAGIC);
     }
 
     @Override
@@ -78,7 +78,7 @@ public class IceStaff extends BaseWeapon
 
         if (target != null) {
             // 计算龙卷风伤害
-            float tornadoDamage = calculateTornadoDamage(player, itemstack);
+            float tornadoDamage = calculateFinalDamage(player, itemstack, null);
 
             // 创建龙卷风效果（在服务器端创建实体）
             if (!level.isClientSide()) {
@@ -137,34 +137,5 @@ public class IceStaff extends BaseWeapon
         }
 
         return closestTarget;
-    }
-
-    public float calculateTornadoDamage(Player player, ItemStack stack) {
-        // 使用BaseWeapon的伤害计算逻辑，但基于魔法伤害
-        float baseDamage = BASE_MAGIC_DAMAGE;
-
-        // 计算基础伤害加成（基于饰品）
-        float accessoryBaseBonus = calculateAccessoryBaseBonus(player);
-
-        // 计算其他伤害加成（饰品、药水等）
-        float otherBonus = calculateOtherBonus(player);
-
-        // 计算伤害浮动值
-        float fluctuation = calculateDamageFluctuation();
-
-        // 判断是否暴击
-        boolean isCritical = isCriticalHit(player);
-
-        float finalDamage;
-        if (isCritical) {
-            // 暴击伤害公式（与BaseWeapon保持一致）
-            float criticalBonus = getCriticalDamageMultiplier(player);
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.8f * criticalBonus * fluctuation;
-        } else {
-            // 普通伤害公式（与BaseWeapon保持一致）
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.9f * fluctuation;
-        }
-
-        return Math.max(1.0f, finalDamage); // 确保最小伤害为1
     }
 }

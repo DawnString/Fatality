@@ -1,5 +1,6 @@
 package cn.dawnstring.fatality.client;
 
+import cn.dawnstring.fatality.Fatality;
 import cn.dawnstring.fatality.items.BaseWeapon;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -7,6 +8,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.util.Mth;
 import net.minecraft.client.Minecraft;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -18,6 +20,7 @@ import java.util.Random;
  */
 public class DamageIndicatorManager {
 
+    private static final Logger LOGGER = Fatality.LOGGER;
     private static final List<DamageIndicator> damageIndicators = new ArrayList<>();
     private static final long INDICATOR_DURATION = 4000; // 传奇风格：4秒显示时间
     private static final Random random = new Random();
@@ -132,18 +135,14 @@ public class DamageIndicatorManager {
             return;
         }
 
-        System.out.println("DamageIndicatorManager.addDamageIndicator: 伤害=" + damage +
-                ", 目标=" + (target != null ? target.getType().getDescription().getString() : "null"));
+        LOGGER.debug("DamageIndicatorManager.addDamageIndicator: 伤害={}, 目标={}",
+                damage, target != null ? target.getType().getDescription().getString() : "null");
 
-        // 每次攻击都添加新的指示器
         damageIndicators.add(new DamageIndicator(target, damage));
 
-        // 限制最大数量
         if (damageIndicators.size() > 15) {
             damageIndicators.remove(0);
         }
-
-        System.out.println("DamageIndicatorManager: 当前指示器数量=" + damageIndicators.size());
     }
 
     /**

@@ -55,7 +55,7 @@ public class DesertShotgun extends BaseWeapon
             public Ingredient getRepairIngredient() {
                 return null;
             }
-        }, new Properties(), 0, 1.0f, 1f, 0.08f, 0.10f, 0.4f, WeaponEnum.RANGED);
+        }, new Properties(), (int)BASE_BULLET_DAMAGE, 1.0f, 1f, 0.08f, 0.10f, 0.4f, WeaponEnum.RANGED);
     }
 
     @Override
@@ -117,72 +117,11 @@ public class DesertShotgun extends BaseWeapon
         return MIN_SPREAD_ANGLE + (float)(Math.random() * (MAX_SPREAD_ANGLE - MIN_SPREAD_ANGLE));
     }
 
-    /**
-     * 计算锥形散布方向（改进的算法）
-     * @param baseDirection 基础方向
-     * @param pelletIndex 弹丸索引
-     * @param totalPellets 总弹丸数量
-     * @param spreadAngle 散射角度
-     * @return 散布后的方向向量
-     */
-    private Vec3 calculateConeSpreadDirection(Vec3 baseDirection, int pelletIndex, int totalPellets, float spreadAngle) {
-        // 将角度转换为弧度
-        double spreadRad = Math.toRadians(spreadAngle);
-
-        // 计算弹丸在锥形中的角度（均匀分布）
-        double angleStep = 2 * Math.PI / totalPellets;
-        double angle = pelletIndex * angleStep;
-
-        // 计算弹丸在锥形中的半径（距离中心的角度）
-        double radius = Math.random() * spreadRad;
-
-        // 计算水平偏移（基于极坐标）
-        double horizontalOffset = radius * Math.cos(angle);
-        double verticalOffset = radius * Math.sin(angle);
-
-        // 获取基础方向的垂直和水平分量
-        Vec3 up = new Vec3(0, 1, 0);
-        Vec3 right = baseDirection.cross(up).normalize();
-        Vec3 forward = baseDirection.normalize();
-
-        // 计算最终方向向量
-        Vec3 spreadVec = forward
-                .add(right.scale(horizontalOffset))
-                .add(up.scale(verticalOffset))
-                .normalize();
-
-        return spreadVec;
+    protected Vec3 calculateConeSpreadDirection(Vec3 baseDirection, int pelletIndex, int totalPellets, float spreadAngle) {
+        return super.calculateConeSpreadDirection(baseDirection, pelletIndex, totalPellets, spreadAngle);
     }
 
-    /**
-     * 计算子弹伤害（使用BaseWeapon相同的计算方法）
-     */
     public float calculateBulletDamage(Player player, ItemStack stack) {
-        // 使用BaseWeapon的伤害计算逻辑，但基于子弹伤害
-        float baseDamage = BASE_BULLET_DAMAGE;
-
-        // 计算基础伤害加成（基于饰品）
-        float accessoryBaseBonus = calculateAccessoryBaseBonus(player);
-
-        // 计算其他伤害加成（饰品、药水等）
-        float otherBonus = calculateOtherBonus(player);
-
-        // 计算伤害浮动值
-        float fluctuation = calculateDamageFluctuation();
-
-        // 判断是否暴击
-        boolean isCritical = isCriticalHit(player);
-
-        float finalDamage;
-        if (isCritical) {
-            // 暴击伤害公式（与BaseWeapon保持一致）
-            float criticalBonus = getCriticalDamageMultiplier(player);
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.8f * criticalBonus * fluctuation;
-        } else {
-            // 普通伤害公式（与BaseWeapon保持一致）
-            finalDamage = baseDamage * accessoryBaseBonus * otherBonus * 0.9f * fluctuation;
-        }
-
-        return Math.max(0, finalDamage);
+        return calculateFinalDamage(player, stack, null);
     }
 }

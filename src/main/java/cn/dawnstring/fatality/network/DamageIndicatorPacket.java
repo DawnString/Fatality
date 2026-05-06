@@ -1,5 +1,6 @@
 package cn.dawnstring.fatality.network;
 
+import cn.dawnstring.fatality.Fatality;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -8,10 +9,12 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.network.NetworkEvent;
 import cn.dawnstring.fatality.client.DamageIndicatorManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.function.Supplier;
 
 public class DamageIndicatorPacket {
+    private static final Logger LOGGER = Fatality.LOGGER;
     private final int targetId;
     private final float damage;
     private final int attackerId;
@@ -47,33 +50,19 @@ public class DamageIndicatorPacket {
 
     @OnlyIn(Dist.CLIENT)
     private static void handleClientSide(DamageIndicatorPacket packet) {
-        System.out.println("DamageIndicatorPacket.handleClientSide: 开始处理");
+        LOGGER.debug("DamageIndicatorPacket.handleClientSide: 开始处理");
 
         var minecraft = net.minecraft.client.Minecraft.getInstance();
         if (minecraft.level != null && minecraft.player != null) {
-            System.out.println("DamageIndicatorPacket: 客户端环境正常");
 
-            // 获取目标实体
             var target = minecraft.level.getEntity(packet.targetId);
             if (target instanceof LivingEntity livingTarget) {
-                System.out.println("DamageIndicatorPacket: 找到目标实体: " + livingTarget.getType().getDescription().getString());
 
-                // 获取攻击者玩家
                 var attacker = minecraft.level.getEntity(packet.attackerId);
                 if (attacker instanceof Player playerAttacker) {
-                    System.out.println("DamageIndicatorPacket: 找到攻击者: " + playerAttacker.getName().getString());
-
-                    // 显示伤害数值
-                    System.out.println("DamageIndicatorPacket: 显示伤害: " + packet.damage);
                     DamageIndicatorManager.addDamageIndicator(livingTarget, packet.damage, playerAttacker);
-                } else {
-                    System.out.println("DamageIndicatorPacket: 攻击者不是玩家或不存在");
                 }
-            } else {
-                System.out.println("DamageIndicatorPacket: 目标实体不存在或不是生物");
             }
-        } else {
-            System.out.println("DamageIndicatorPacket: 客户端环境不完整");
         }
     }
 }
